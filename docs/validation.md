@@ -2,6 +2,65 @@
 
 Checked on 2026-09-26 from the existing NixOS workstation, without activation.
 
+## Codex vendor checksum protection, 2026-09-26
+
+The user reports successful source preparation with the explicit Rust 1.95
+manifest on the T490. Its first daemon-backed Home build then failed on Cargo's
+checksum for `vendor/autocfg/tests/wrap_ignored`. This is a build failure,
+not a source-preparation or toolchain-discovery failure.
+
+At the pinned Guix revision, the relevant GNU phases run in this order:
+`unpack`, `bootstrap`, `patch-usr-bin-file`, `patch-source-shebangs`, our
+`configure`, `patch-generated-file-shebangs`, then our `build`.
+`patch-source-shebangs` scans every regular source file, even non-executable
+test fixtures. It changes the autocfg wrapper's `#!/bin/bash` to the Bash
+store path. `patch-generated-file-shebangs` scans executable files and rewrites
+Makefile `SHELL` assignments. `patch-usr-bin-file` can also rewrite executable
+`configure` scripts. None of these phases understands Cargo checksum manifests.
+
+The recipe now moves the vendor directory outside the unpacked source after
+`unpack`, then restores it before `build`, accounting for `configure` changing
+directory to `codex-rs`. All normal rewriting phases remain enabled for other
+sources; the post-install `patch-shebangs` phase is unchanged. Codex installs
+native executables, not vendored test wrappers. If a dependency later needs a
+script adaptation, it must use an explicit interpreter or a separate build
+copy rather than modifying the authenticated vendor tree.
+
+`scripts/check-codex-vendor.scm` checks the prepared archive's original Cargo
+file hashes, executes the recipe's actual pre-build phase expressions in a
+temporary tree, and compares a recursive hash of the entire vendor directory,
+including checksum manifests. Controls check that non-vendored source scripts,
+generated scripts, configure commands and Makefile shells still get patched.
+The test evaluates only pre-build code; approximate output references in the
+unused install phase are not executed. It does not compile or run Codex.
+
+Local results against the clean pinned Guix source, using the Nix-provided
+Guile/Guix runtime:
+
+- Reproduced the autocfg wrapper mutation with the original GNU phases on a
+  disposable vendor copy. `patch-source-shebangs` changed 658 files with this
+  machine's interpreter PATH. The generated-file phase changed three more:
+  `bzip2-sys/bzip2-1.0.8/Makefile`, `r-efi-5.3.0/Makefile` and
+  `r-efi/Makefile`. The `/usr/bin/file` phase changed no vendored file in this
+  archive, but remains covered by the protection and regression controls.
+- The fixed recipe's regression check passed: original checksums for all
+  1,313 vendored crates verified, the complete vendor tree survived unchanged,
+  and the non-vendor rewriting controls passed.
+- A negative control removed only the two new protection phases from the
+  evaluated phase list. The same test exited with status 1 and
+  `Pre-build phases changed the Cargo vendor tree`, confirming it catches
+  the original failure mechanism.
+- `scripts/check.scm` passed, including Rust/Cargo consistency, the T490
+  system/Home service graphs and the shared free-kernel defaults.
+- `git diff --check` passed. No shell scripts changed; ShellCheck is not
+  applicable to the Scheme recipe and regression script.
+
+The pinned time-machine evaluation, regression command, Codex build, system
+build and Home build were attempted here and remain blocked by the missing
+`/var/guix/daemon-socket/socket`. A successful daemon-backed Codex/Home rebuild
+on the T490 is still required. Existing prepared archives can be reused;
+the source pin, lockfile, Rust 1.95 toolchain and both channel pins are unchanged.
+
 ## Codex toolchain correction, 2026-09-26
 
 The earlier source preparation and metadata checks below did **not** validate

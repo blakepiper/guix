@@ -28,6 +28,14 @@
       #:substitutable? #f
       #:phases
       #~(modify-phases %standard-phases
+          (add-after 'unpack 'protect-cargo-vendor
+            (lambda _
+              ;; GNU's source/generated shebang and /usr/bin/file patchers
+              ;; recurse through the source tree. Cargo authenticates these
+              ;; files against .cargo-checksum.json, including test fixtures.
+              ;; Keep the vendor tree outside their traversal, without a
+              ;; symlink, while retaining normal patching of our own sources.
+              (rename-file "codex-rs/vendor" "../codex-cargo-vendor")))
           (replace 'configure
             (lambda* (#:key inputs #:allow-other-keys)
               (chdir "codex-rs")
@@ -39,6 +47,11 @@
               (setenv "LIBSQLITE3_SYS_USE_PKG_CONFIG" "1")
               (setenv "ZSTD_SYS_USE_PKG_CONFIG" "1")
               (setenv "LIBCLANG_PATH" (string-append (assoc-ref inputs "clang") "/lib"))))
+          (add-before 'build 'restore-cargo-vendor
+            (lambda _
+              ;; configure has changed directory to codex-rs. Restore the
+              ;; exact bytes only after all pre-build GNU rewriting phases.
+              (rename-file "../../codex-cargo-vendor" "vendor")))
           (replace 'build
             (lambda _
               (invoke "cargo" "build" "--frozen" "--release" "-j2"

@@ -83,7 +83,12 @@ with your installation media if installing offline. Vendored sources need about
 limit build parallelism to two jobs for the laptop.
 
 Guix imports that archive into its content-addressed store and builds with
-`cargo --frozen` in the offline sandbox. The optional V8 code-mode host is not
+`cargo --frozen` in the offline sandbox. The recipe temporarily moves the vendor
+directory outside the source tree during GNU source-rewriting phases, then
+restores it before Cargo runs. This preserves Cargo's original checksums while
+retaining shebang handling for other sources and installed files. Existing
+prepared archives do not need regeneration for this recipe change.
+The optional V8 code-mode host is not
 included; ordinary CLI/exec binaries and the daemon package layout are included.
 Do not enable features requiring that optional host until a source recipe exists.
 
@@ -96,6 +101,8 @@ and rerun the checks and builds. Do not replace pins with moving `latest` URLs.
 
 ```sh
 ./scripts/guix repl -L modules scripts/check.scm
+./scripts/guix shell bash coreutils file tar gzip -- \
+  ./scripts/guix repl -L modules scripts/check-codex-vendor.scm
 ./scripts/guix build -L modules -e '(@ (workstation packages oxwm) oxwm-source)'
 ./scripts/guix build -L modules -e '(@ (workstation packages codex) codex-source)'
 ./scripts/guix system build -L modules hosts/t490/system.scm
@@ -105,6 +112,11 @@ git diff --check
 
 Evaluation is not a successful build or a hardware test. See
 [validation notes](docs/validation.md) for what has actually been checked.
+The vendor regression check unpacks a temporary copy of the prepared archive
+(allow about 2 GB), verifies Cargo's recorded file checksums, and runs the
+recipe's pre-build phases. It checks that vendor bytes remain unchanged and
+that non-vendored source/generated scripts still receive shebang fixes. It
+does not compile Codex or replace the daemon-backed package/Home builds.
 
 ## Install on the T490
 

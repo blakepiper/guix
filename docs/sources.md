@@ -26,6 +26,15 @@ Read-only local references inspected on 2026-09-26:
   a normal dependency path, so Rust 1.93 cannot build this lockfile.
   1.94 is a declared dependency lower bound, not a verified minimum for all
   Codex source code; this port uses upstream's selected 1.95.0.
+  The GNU build phases normally rewrite source shebangs, generated Makefile
+  shells and `/usr/bin/file` references recursively. Vendored crates retain
+  Cargo's original checksums, so the recipe moves `codex-rs/vendor` to a sibling
+  of the unpacked source immediately after unpacking and restores it just
+  before compilation. No checksum files or lock entries are regenerated, and
+  ordinary source/output shebang patching remains enabled. A direct switch to
+  this pin's Cargo build system would not preserve these invariants: its
+  configure phase removes Cargo.lock and its checksum phase writes empty
+  per-file checksum maps.
 - Guix `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656`:
   <https://codeberg.org/guix/guix>. `channels.scm` retains the official channel
   introduction for authenticated updates. Recent Zig and Rust definitions are
