@@ -3,8 +3,10 @@
 - Keep host facts in `hosts/<name>/`; shared Scheme modules belong under
   `modules/workstation/`. Use `-L modules`, not `-L .`, so Guix's package
   discovery does not evaluate host entrypoints as package modules.
-- Keep the official authenticated Guix channel, Linux-libre and free firmware.
-  Do not introduce nonfree channels, firmware or prebuilt application binaries.
+- Keep Linux-libre and free firmware as the shared defaults. The user authorized
+  a T490-only exception: standard Linux and iwlwifi-firmware from the pinned,
+  authenticated Nonguix channel. Do not expand that exception to other hosts or
+  nonfree packages, or introduce prebuilt application binaries.
 - Keep OXWM and Codex as pinned source builds. Update release metadata and
   recipes together; source preparation must preserve external lock entries.
 - Picom must keep all windows opaque. Do not add transparency, fading or

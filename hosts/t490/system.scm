@@ -1,4 +1,5 @@
 (use-modules (gnu)
+             ((nongnu packages linux) #:prefix nongnu:)
              (workstation system base)
              (workstation system desktop)
              (workstation system thinkpad))
@@ -8,6 +9,9 @@
 (operating-system
   (inherit base-operating-system)
   (host-name "t490")
+  ;; Explicit host exception for the built-in Intel wireless adapter.
+  (kernel nongnu:linux)
+  (firmware (cons nongnu:iwlwifi-firmware %base-firmware))
   (kernel-loadable-modules '())
   (file-systems t490-file-systems)
   (swap-devices t490-swap-devices)

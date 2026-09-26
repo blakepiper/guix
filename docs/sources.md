@@ -31,8 +31,9 @@ modified. No installer or existing system configuration was activated.
 
 Intentional changes from AlpineWS: GNU userland and libc, Shepherd system
 services, Elogind session/power management, Guix Home PipeWire services, Picom,
-LibreWolf, source-built Codex, and packaged st. The stock Intel firmware and CPU
-microcode packages are omitted. Input permissions are managed through Elogind
+LibreWolf, source-built Codex, and packaged st. CPU microcode remains omitted.
+Intel Wi-Fi firmware was subsequently enabled only for the T490 at the user's
+request. Input permissions are managed through Elogind
 and udev rather than Alpine's broad input-group setup.
 
 ## Blix editor import
@@ -58,3 +59,16 @@ upstream `tree-sitter/tree-sitter` tag `v0.26.1` with SHA-256
 `sources/tree-sitter/Cargo.lock` is copied unchanged from that archive; Guix
 imports the registry dependency sources and hashes from it. This is a source
 build, without an npm-distributed executable or changes to Blix's plugin pins.
+
+## T490 Wi-Fi exception, 2026-09-26
+
+Nonguix is pinned at `2a16e08d40b913e593c7c9ea29bc82b96f117e24` from
+<https://gitlab.com/nonguix/nonguix>. Its channel introduction is
+`897c1a470da759236cc11798f4e0a5f7d4d59fbc`, with signing fingerprint
+`2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5`, as documented in
+[the upstream README](https://github.com/nonguix/nonguix).
+
+Only `hosts/t490/system.scm` selects its `linux` kernel and `iwlwifi-firmware`.
+The shared base retains Linux-libre and `%base-firmware`; no microcode initrd,
+full firmware bundle, additional substitute server or signing key is configured.
+Channel introduction authentication remains enabled in the time-machine path.

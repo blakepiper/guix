@@ -6,7 +6,8 @@ shared modules, user configuration, and machine-specific facts.
 
 The desktop uses Xorg, OXWM, **Picom with fully opaque windows**, st, LibreWolf,
 Xfe, Neovim and PipeWire. Log in on a console and run `startx`. There is no display
-manager, automatic login, proprietary browser DRM, or nonfree firmware channel.
+manager, automatic login, or proprietary browser DRM. The T490 has an explicit
+Intel Wi-Fi exception described below.
 GNU libc, GNU command-line tools, Bash and Shepherd replace Alpine's musl,
 BusyBox and OpenRC. Elogind manages seats, power actions and suspend inhibition.
 
@@ -14,7 +15,7 @@ BusyBox and OpenRC. Elogind manages seats, power actions and suspend inhibition.
 
 | Path | Responsibility |
 | --- | --- |
-| `channels.scm` | Authenticated official Guix revision, shared by every host |
+| `channels.scm` | Pinned authenticated Guix and Nonguix channels |
 | `modules/workstation/system/` | Shared OS, desktop services, reusable ThinkPad battery service |
 | `modules/workstation/home/` | Shared user applications and Guix Home services |
 | `modules/workstation/packages/` | Source recipes for OXWM, Codex, clipboard listener and editor tooling |
@@ -32,12 +33,17 @@ or add hostname tests to shared modules.
 
 ## Freedom and hardware
 
-The configuration explicitly selects Linux-libre and Guix's free base firmware.
-It does not install Intel Wi-Fi firmware, CPU microcode updates, proprietary GPU
-firmware, or Nonguix. Plan on Ethernet or a verified free-firmware-compatible
-network adapter: AlpineWS's Intel wireless setup does not carry over. Bluetooth,
-video acceleration and other firmware-dependent functions must be tested on the
-T490. Picom uses XRender to avoid requiring working accelerated OpenGL.
+Shared defaults select Linux-libre and Guix's free base firmware. The T490 alone
+uses Nonguix's standard Linux and adds `iwlwifi-firmware` for its built-in Intel
+wireless adapter, an explicit nonfree exception requested for this host. This
+package contains firmware for multiple Intel Wi-Fi models, not one device blob.
+Adding the channel does not change other hosts' kernel or firmware defaults.
+
+The exception adds no full `linux-firmware` bundle, CPU microcode, Bluetooth
+firmware or GPU firmware. Bluetooth, video acceleration and other firmware-dependent
+functions still need testing. Picom uses XRender to avoid requiring working
+accelerated OpenGL. See the
+[Nonguix instructions](https://github.com/nonguix/nonguix#installation).
 
 The T490 still has proprietary platform firmware; installing Guix cannot make
 that hardware fully free. Omitting microcode also forgoes OS-delivered CPU fixes.
@@ -127,6 +133,31 @@ cd ~/guix
 # Log out and back in so the Guix Home environment and user services are active.
 startx
 ```
+
+### Finishing an official installer installation
+
+Finish installing over Ethernet and boot the installed system. Selecting
+Linux-libre in the installer is fine; reconfiguration can change the kernel later.
+Clone or update this repository, then **adapt `hosts/t490/hardware.scm` to the
+actual filesystems, swap and any encrypted-device mappings in the installer's
+generated `/etc/config.scm`**. Verify with `lsblk -f`; the example labels in this
+repository must not replace your actual storage identities. Also check the user
+account and EFI mount point before applying this configuration.
+
+From the checkout, while still connected by Ethernet:
+
+```sh
+./scripts/guix system build -L modules hosts/t490/system.scm
+sudo ./scripts/guix system reconfigure -L modules hosts/t490/system.scm
+sudo reboot
+```
+
+Boot the new generation, then check `nmcli device status` and
+`nmcli device wifi list`. Connect with
+`nmcli --ask device wifi connect "YOUR_SSID"`. The kernel changes after reboot;
+the running installer is unaffected. Keep Ethernet until Wi-Fi is verified.
+No reinstall is required. Home setup and Codex source preparation are separate
+from this system-only change.
 
 Subsequent system changes use:
 

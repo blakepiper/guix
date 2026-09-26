@@ -70,3 +70,19 @@ Before installation, verify the actual storage identities in
   reached the existing missing-daemon limitation.
 - ShellCheck and whitespace checks passed. No live editor configuration or
   sibling repository was modified, and no configuration was activated.
+
+## T490 Wi-Fi exception, 2026-09-26
+
+- Evaluated the T490 system and Home definitions and folded both service graphs
+  against the pinned Guix source and Nonguix source at
+  `2a16e08d40b913e593c7c9ea29bc82b96f117e24`, using the local Nix Guile/Guix
+  runtime. The evaluation exited successfully.
+- Added and passed assertions that the T490 selects Nonguix Linux plus exactly
+  `iwlwifi-firmware` and the free base firmware, while shared defaults still
+  select Linux-libre and the unchanged free firmware list.
+- The repository's time-machine evaluation and system build both stopped at
+  the inaccessible `/var/guix/daemon-socket/socket`. Channel expressions parsed,
+  but daemon-backed channel authentication, builds and activation remain untested.
+- `git diff --check` passed. No scripts or application recipes changed; no
+  system was activated. Physical Wi-Fi, boot and suspend testing remain pending
+  on the T490 after reconfiguration and reboot.

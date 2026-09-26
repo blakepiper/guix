@@ -11,7 +11,7 @@
     (locale "en_US.utf8")
     (keyboard-layout (keyboard-layout "us"))
     (kernel linux-libre)
-    ;; %base-firmware consists of free firmware; no Nonguix channel is used.
+    ;; Shared defaults remain free; host exceptions belong in hosts/<name>/.
     (firmware %base-firmware)
     (bootloader (bootloader-configuration
                  (bootloader grub-efi-bootloader)
