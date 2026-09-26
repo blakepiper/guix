@@ -1,6 +1,6 @@
 (use-modules (gnu) (gnu home) (gnu home services) (gnu services) (guix packages)
              (guix download) (guix base16) (guix build-system trivial)
-             (json) (srfi srfi-1)
+             (srfi srfi-1)
              ((gnu packages linux) #:prefix libre:)
              ((nongnu packages linux) #:prefix nongnu:)
              (workstation system base)
@@ -8,8 +8,8 @@
 
 (define system (primitive-load "hosts/t490/system.scm"))
 (define home (primitive-load "hosts/t490/home.scm"))
-(define release
-  (assoc-ref (call-with-input-file "sources/releases.json" json->scm) "codex"))
+(primitive-load "scripts/check-codex-release.scm")
+(define release codex-release)
 (define source (package-source codex))
 (unless (and (eq? (package-build-system codex) trivial-build-system)
              (string=? (package-name codex) "codex")
@@ -31,7 +31,7 @@
                                (package-inputs codex)) string<?)
                      '("bash-minimal" "bubblewrap" "ripgrep"))
              (memq codex (home-environment-packages home)))
-  (error "Codex must use the pinned official musl binary and minimal wrapper inputs"))
+  (error "Codex must use the resolved official musl binary and minimal wrapper inputs"))
 (unless (string=? (operating-system-host-name system) "t490")
   (error "Unexpected hostname"))
 (unless (and (eq? (operating-system-kernel system) nongnu:linux)

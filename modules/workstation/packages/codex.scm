@@ -8,21 +8,23 @@
   #:use-module (gnu packages bash)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages virtualization)
-  #:use-module (gnu packages rust-apps))
+  #:use-module (gnu packages rust-apps)
+  #:use-module (workstation codex-release))
+
+(define-public codex-release (read-codex-release))
 
 (define-public codex
   (package
     (name "codex")
-    (version "0.157.1")
+    (version (assoc-ref codex-release "version"))
     (source
      (origin
        (method url-fetch)
-       (uri (string-append "https://github.com/openai/codex/releases/download/"
-                           "rust-v" version "/codex-x86_64-unknown-linux-musl.tar.gz"))
+       (uri (assoc-ref codex-release "url"))
        (file-name (string-append "codex-" version "-x86_64-linux-musl.tar.gz"))
        (sha256
         (base16-string->bytevector
-         "e98c1e8e028e8137fa2d2415c82ec58e7b3701a627e3554aace5b3ca31454af2"))))
+         (assoc-ref codex-release "sha256")))))
     ;; No implicit GNU compiler inputs or source-rewriting phases.
     (build-system trivial-build-system)
     (arguments

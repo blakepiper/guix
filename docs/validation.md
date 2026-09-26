@@ -1,8 +1,44 @@
 # Validation
 
-## Official Codex musl package, 2026-09-26
+## Latest stable Codex on Home commands, 2026-09-26
 
-The supported Codex package now installs the official binary at the user's
+The user's follow-up replaces the fixed Home version policy: each
+`./scripts/guix home build` and `./scripts/guix home reconfigure` first queries
+OpenAI's latest stable release API using the pinned Guix runtime. It passes a
+private temporary version/URL/SHA-256 snapshot to package evaluation. Guix
+verifies the actual artifact against that digest; no mutable URL enters the
+derivation, and no tracked files or channel pins are rewritten. Refresh errors
+abort the Home command. Temporary metadata is removed on success or failure.
+
+The live lookup returned 0.157.1 and the same SHA-256 independently verified
+below. A new release therefore needs no recipe edit; today this policy change
+does not change the executable. Offline checks/direct package evaluation use
+the checked-in reference when no per-command snapshot is supplied. Existing
+Home generations are not updated in place.
+
+Validation on the development machine:
+
+- Live refresh succeeded using the pinned Guix source and local Nix-provided
+  Guile/Guix runtime, without a daemon. The resolved digest matches the
+  independently hashed official artifact from the initial migration below.
+- All 16 offline release tests passed: stable-version selection, required
+  musl asset/digest, rejection of drafts/prereleases and unexpected URLs,
+  snapshot precedence, and refusal to fall back from invalid metadata.
+- The shell routing regression passed for both Home commands, arguments with
+  spaces, refresh/build failures and temporary-file cleanup. A system build
+  was passed through without refresh. These use a mock Guix command and never
+  activate Home.
+- Complete T490 Home/system evaluation and service-graph checks passed against
+  the pinned sources with the live release snapshot. This is evaluation, not
+  a daemon-backed build. The existing binary/launcher implementation is unchanged.
+- ShellCheck passed for both shell scripts, and `git diff --check` passed.
+- The repository time-machine check and Codex/system/Home builds were attempted
+  again, but stopped at the missing `/var/guix/daemon-socket/socket`. No Guix
+  derivation build or activation is claimed. The T490 remains the integration test.
+
+## Initial official Codex musl migration, 2026-09-26
+
+The initial binary migration installed the official binary at the user's
 request, following unsuccessful source builds on the real T490. Earlier
 source-build debugging details remain in Git history, not active instructions.
 

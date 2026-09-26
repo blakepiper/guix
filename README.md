@@ -24,7 +24,7 @@ BusyBox and OpenRC. Elogind manages seats, power actions and suspend inhibition.
 | `hosts/t490/home.scm` | Host display settings |
 | `home/przvl/` | Desktop configuration and session helpers |
 | `sources/` | Release pins, patches and copied source inputs |
-| `scripts/` | Pinned Guix invocation and configuration checks |
+| `scripts/` | Pinned Guix invocation, Codex release refresh and checks |
 
 To add a host, create `hosts/NAME/{system,hardware,home}.scm` and compose the same
 shared modules. Keep disk identities, display connectors, battery behavior and
@@ -54,19 +54,27 @@ compromise with [GNU's position on service-based computing](https://www.gnu.org/
 No login credentials or hosted provider configuration are included here.
 LibreWolf is installed with its defaults, without imported Firefox policies.
 
-## Pinned application packages
+## Application packages
 
 OXWM 0.13.0 remains a pinned source build using the channel's Zig 0.16. Its
 recipe replaces the Lua download with a pinned Guix source input and limits
 build parallelism to two jobs.
 
-Codex **0.157.1** uses OpenAI's official
-[`codex-x86_64-unknown-linux-musl.tar.gz`](https://github.com/openai/codex/releases/download/rust-v0.157.1/codex-x86_64-unknown-linux-musl.tar.gz)
-from [the versioned release](https://github.com/openai/codex/releases/tag/rust-v0.157.1).
-Guix verifies its fixed SHA-256, extracts the single static executable, and
-installs a `codex` launcher in the Home profile. No local Codex compilation or
-preparation step is needed. Home activation performs no download or installer
-step; the artifact is fetched and verified as a Guix build input.
+Codex tracks OpenAI's **latest stable release** of
+`codex-x86_64-unknown-linux-musl.tar.gz`. Every invocation of
+`./scripts/guix home build` or `./scripts/guix home reconfigure` checks
+[OpenAI's latest-release API](https://api.github.com/repos/openai/codex/releases/latest)
+before evaluating Home. It snapshots the release's version-specific asset URL
+and SHA-256 for that command, then Guix verifies the download and installs a
+`codex` launcher in the Home profile. There is no Codex compilation or source
+preparation command, and no network installer during activation.
+
+The latest-release check requires network access. If it fails, or the latest
+release lacks the musl asset or checksum, the Home command stops rather than
+silently using an older release. The temporary snapshot is removed afterward;
+tracked files stay unchanged. `home build` only builds; `home reconfigure`
+activates the resulting generation. Existing generations retain their exact
+Codex version and remain available for rollback.
 
 The launcher supplies Guix's bubblewrap and ripgrep on PATH for sandboxing and
 search and defaults to upstream's `--no-daemon` mode. Without that option,
@@ -77,18 +85,22 @@ no adjacent resources or separate exec binary in standalone mode. Explicit
 Managed-daemon provisioning and its local agents overview require a complete
 upstream package and are not provisioned by this recipe.
 The launcher preserves `HOME`, `CODEX_HOME`, authentication and configuration.
-No credentials are included. Update this package through the repository and
-Guix Home, rather than running Codex's own installer/updater.
+No credentials are included. Update Codex through these Guix Home commands,
+rather than running Codex's own installer/updater.
 
-Versions and hashes are recorded in `sources/releases.json` and the recipes.
-For updates, verify the exact release assets and their runtime requirements,
-update both records, and rerun evaluation and package/Home builds. The fixed
-hash rejects changed upstream bytes even if a release asset is replaced.
+Guix/Nonguix and other application pins are unchanged. `sources/releases.json`
+retains Codex 0.157.1 as an offline reference for checks and direct package
+evaluation; the two Home commands always override it with a fresh upstream
+lookup. Calling `guix` directly bypasses this repository wrapper and its refresh.
+Each resolved build still uses a fixed URL/hash, so changed asset bytes fail
+verification. No recipe edit or repository update is needed for new stable
+Codex releases with the same supported distribution layout.
 
 ## Check and build
 
 ```sh
 ./scripts/guix repl -L modules scripts/check.scm
+./scripts/check-guix-wrapper.sh
 ./scripts/guix build -L modules -e '(@ (workstation packages oxwm) oxwm-source)'
 ./scripts/guix build -L modules -e '(@ (workstation packages codex) codex)'
 ./scripts/guix system build -L modules hosts/t490/system.scm

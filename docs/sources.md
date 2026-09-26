@@ -14,12 +14,17 @@ Read-only local references inspected on 2026-09-26:
   <https://github.com/tonybanters/oxwm/tree/v0.13.0>. MIT license. Source tarball
   checksum is recorded in both `sources/releases.json` and the recipe. Zig's
   Lua download is replaced with Guix's pinned Lua 5.4.8 source input.
-- Codex `rust-v0.157.1`:
+- Codex official stable musl releases (initially inspected at `rust-v0.157.1`):
   <https://github.com/openai/codex/releases/tag/rust-v0.157.1>. Apache-2.0 license.
-  At the user's request, use the official Linux x86_64 musl executable instead
-  of a local compilation. The release API lists asset ID `589592614`, named
+  At the user's request, each repository-wrapped Home build/reconfigure now
+  resolves the latest stable release through OpenAI's GitHub API. A private
+  per-invocation JSON snapshot supplies the versioned URL and SHA-256 to the
+  recipe; evaluation and activation do not query upstream. The checked-in
+  metadata remains an offline reference for other commands, not a Home pin.
+  This uses the official Linux x86_64 musl executable instead of a local
+  compilation. The initial release API lists asset ID `589592614`, named
   `codex-x86_64-unknown-linux-musl.tar.gz`; its download URL and independently
-  verified SHA-256 are pinned in `sources/releases.json` and the package.
+  verified SHA-256 are retained in `sources/releases.json` as the reference.
   The archive contains one static PIE executable. Upstream's README explicitly
   documents renaming that executable to `codex`. The package uses Guix's
   trivial build system to unpack it and wrap PATH with bubblewrap and ripgrep.
@@ -41,7 +46,7 @@ modified. No installer or existing system configuration was activated.
 
 Intentional changes from AlpineWS: GNU userland and libc, Shepherd system
 services, Elogind session/power management, Guix Home PipeWire services, Picom,
-LibreWolf, the official pinned Codex binary, and packaged st. CPU microcode remains omitted.
+LibreWolf, the official Codex binary, and packaged st. CPU microcode remains omitted.
 Intel Wi-Fi firmware was subsequently enabled only for the T490 at the user's
 request. Input permissions are managed through Elogind
 and udev rather than Alpine's broad input-group setup.

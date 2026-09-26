@@ -3,4 +3,20 @@
 set -eu
 root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$root"
+case "${1-}:${2-}" in
+  home:build|home:reconfigure)
+    # Snapshot latest once for this invocation; parallel builds cannot race,
+    # and refreshing never dirties tracked files or runs during activation.
+    codex_release_dir=$(mktemp -d "${TMPDIR:-/tmp}/guix-codex-release.XXXXXX")
+    trap 'rm -rf -- "$codex_release_dir"' EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+    GUIX_CODEX_RELEASE_FILE="$codex_release_dir/release.json"
+    export GUIX_CODEX_RELEASE_FILE
+    guix time-machine -C "$root/channels.scm" -- \
+      repl -L "$root/modules" "$root/scripts/update-codex.scm"
+    guix time-machine -C "$root/channels.scm" -- "$@"
+    exit
+    ;;
+esac
 exec guix time-machine -C "$root/channels.scm" -- "$@"
