@@ -1,0 +1,39 @@
+#!/bin/sh
+# Private text-only history. Image selections are never converted to text.
+set -eu
+umask 077
+dir=${XDG_RUNTIME_DIR:?}/alpinews-clipboard
+mkdir -p "$dir"
+[ ! -L "$dir" ] && [ "$(stat -c %u "$dir")" = "$(id -u)" ] || exit 1
+chmod 700 "$dir"
+case "${1:-}" in
+    --clear) rm -f "$dir"/*.txt; exit 0 ;;
+    --record)
+        targets=$(timeout 3 xclip -selection clipboard -o -t TARGETS 2>/dev/null) || exit 0
+        printf '%s\n' "$targets" | grep -qx UTF8_STRING || exit 0
+        tmp=$(mktemp "$dir/.clip.XXXXXX")
+        trap 'rm -f "$tmp"' EXIT
+        # A clipboard is not an unbounded file store. Do not persist data >1 MiB.
+        timeout 3 xclip -selection clipboard -o -t UTF8_STRING 2>/dev/null | head -c 1048577 > "$tmp"
+        [ -s "$tmp" ] && [ "$(wc -c < "$tmp")" -le 1048576 ] || exit 0
+        hash=$(sha256sum "$tmp" | cut -d ' ' -f1)
+        mv "$tmp" "$dir/$hash.txt"
+        touch "$dir/$hash.txt"
+        # Filenames here are generated hex hashes, not user-controlled paths.
+        ls -t "$dir"/*.txt | tail -n +101 | while IFS= read -r file; do rm -f "$file"; done
+        ;;
+    '')
+        [ -n "$(find "$dir" -name '*.txt' -print)" ] || exit 0
+        selected=$(
+            ls -t "$dir"/*.txt | while IFS= read -r file; do
+                name=${file##*/}
+                preview=$(head -c 240 "$file" | tr '\n\r\t' '   ')
+                printf '%s\t%.160s\n' "${name%.txt}" "$preview"
+            done | dmenu -i -l 15 -p Clipboard
+        ) || exit 0
+        hash=$(printf '%s' "$selected" | cut -f1)
+        case "$hash" in ''|*[!a-f0-9]*) exit 0 ;; esac
+        [ "${#hash}" = 64 ] && [ -f "$dir/$hash.txt" ] || exit 0
+        exec xclip -selection clipboard -i "$dir/$hash.txt" ;;
+    *) printf 'Usage: clipboard-history [--clear]\n' >&2; exit 2 ;;
+esac

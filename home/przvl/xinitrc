@@ -1,0 +1,36 @@
+#!/bin/sh
+set -eu
+# Keep Guix's profile and service environment; never substitute Alpine's PATH.
+export PATH="$HOME/.local/bin:$PATH"
+export XDG_CURRENT_DESKTOP=OXWM XDG_SESSION_TYPE=x11
+export MOZ_ENABLE_WAYLAND=0
+export ALPINEWS_BATTERY=
+for battery in /sys/class/power_supply/BAT*; do
+    [ -r "$battery/type" ] || continue
+    ALPINEWS_BATTERY=${battery##*/}
+    break
+done
+export ALPINEWS_BATTERY
+xsetroot -solid '#1a1b26'
+xset r rate 200 50
+xset s off
+xset +dpms
+xset dpms 0 0 0
+alpinews-monitors
+pids=''
+cleanup() {
+    trap - EXIT
+    for pid in $pids; do kill "$pid" 2>/dev/null || :; done
+    for pid in $pids; do wait "$pid" 2>/dev/null || :; done
+    rm -rf "${XDG_RUNTIME_DIR:?}/alpinews-clipboard"
+    rm -f "$XDG_RUNTIME_DIR/alpinews-cpu"
+}
+trap cleanup EXIT
+trap 'exit 0' HUP INT TERM
+# -n keeps i3lock in the foreground; xss-lock owns elogind's sleep inhibitor.
+xss-lock -- /run/privileged/bin/i3lock -n -c 1a1b26 & pids="$pids $!"
+picom --config "$HOME/.config/picom/picom.conf" & pids="$pids $!"
+alpinews-hotplug & pids="$pids $!"
+alpinews-clipwatch & pids="$pids $!"
+oxwm & wm=$!; pids="$pids $wm"
+wait "$wm"

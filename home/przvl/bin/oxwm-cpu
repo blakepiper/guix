@@ -1,0 +1,10 @@
+#!/bin/sh
+# One /proc read per bar update; no sleep or resident monitor process.
+set -eu
+file=${XDG_RUNTIME_DIR:?}/alpinews-cpu
+now=$(awk '/^cpu / {idle=$5+$6; total=0; for(i=2;i<=9;i++)total+=$i; print total,idle; exit}' /proc/stat)
+old='0 0'
+[ ! -r "$file" ] || old=$(cat "$file")
+printf '%s\n' "$now" > "$file"
+printf '%s\n%s\n' "$old" "$now" | awk 'NR==1 {t=$1;i=$2} NR==2 {
+  d=$1-t; busy=d-($2-i); if(d>0)printf "%.0f\n",100*busy/d; else print 0}'

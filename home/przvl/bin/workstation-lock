@@ -1,0 +1,3 @@
+#!/bin/sh
+# Have the session's single xss-lock process own the lock and sleep inhibitor.
+exec loginctl lock-session

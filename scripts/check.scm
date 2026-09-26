@@ -1,0 +1,16 @@
+(use-modules (gnu) (gnu home) (gnu home services) (gnu services) (guix packages)
+             (workstation packages oxwm) (workstation packages codex))
+
+(define system (primitive-load "hosts/t490/system.scm"))
+(define home (primitive-load "hosts/t490/home.scm"))
+(unless (string=? (operating-system-host-name system) "t490")
+  (error "Unexpected hostname"))
+;; Folding catches missing or duplicate service dependencies, not just syntax.
+(fold-services (operating-system-services system))
+(fold-services (home-environment-services home)
+               #:target-type home-service-type)
+(for-each (lambda (entry)
+            (let ((package (if (pair? entry) (car entry) entry)))
+              (format #t "~a@~a\n" (package-name package) (package-version package))))
+          (cons* oxwm-source codex-source (home-environment-packages home)))
+(display "T490 system and Home configuration evaluated.\n")

@@ -1,0 +1,6 @@
+#!/bin/sh
+# Invoke the repository's authenticated, pinned official Guix channel.
+set -eu
+root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$root"
+exec guix time-machine -C "$root/channels.scm" -- "$@"

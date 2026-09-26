@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+choice=$(printf '%s\n' Lock Suspend Reboot 'Log Out' 'Monitors Off' 'Power Off' | dmenu -i -p System) || exit 0
+case "$choice" in
+    Lock) exec workstation-lock ;;
+    Suspend) exec loginctl suspend ;;
+    'Monitors Off') exec xset dpms force off ;;
+    Reboot|'Log Out'|'Power Off')
+        answer=$(printf '%s\n' No Yes | dmenu -i -p "$choice?") || exit 0
+        [ "$answer" = Yes ] || exit 0
+        case "$choice" in
+            Reboot) exec loginctl reboot ;;
+            'Power Off') exec loginctl poweroff ;;
+            'Log Out') exec xdotool key --clearmodifiers super+shift+q ;;
+        esac ;;
+esac

@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eu
+[ -n "${DISPLAY:-}" ] || exit 0
+config=${XDG_CONFIG_HOME:-$HOME/.config}/alpinews/display.conf
+# shellcheck disable=SC1090
+[ ! -r "$config" ] || . "$config"
+internal=${ALPINEWS_INTERNAL_OUTPUT:-eDP-1}
+external=${ALPINEWS_EXTERNAL_OUTPUT:-HDMI-2}
+mode=${ALPINEWS_MIRROR_MODE:-1920x1080}
+rate=${ALPINEWS_MIRROR_RATE:-60}
+outputs=$(xrandr --query)
+connected() { printf '%s\n' "$outputs" | awk -v o="$1" '$1==o && $2=="connected" {ok=1} END {exit !ok}'; }
+has_mode() {
+    printf '%s\n' "$outputs" | awk -v o="$1" -v m="$mode" '
+      /^[^[:space:]]/ {active=($1==o && $2=="connected")}
+      active && $1==m {ok=1} END {exit !ok}'
+}
+if ! connected "$internal"; then
+    internal=$(printf '%s\n' "$outputs" | awk '$2=="connected" && $1~/^eDP/ {print $1; exit}')
+fi
+[ -n "$internal" ] || { echo 'No internal panel detected; leaving displays unchanged.' >&2; exit 0; }
+if ! connected "$external"; then
+    external=$(printf '%s\n' "$outputs" | awk '$2=="connected" && $1~/^(HDMI|DP)-/ {print $1; exit}')
+fi
+if [ -n "$external" ]; then
+    if has_mode "$internal" && has_mode "$external"; then
+        xrandr --output "$internal" --mode "$mode" --rate "$rate" --scale 1x1 --primary \
+            --output "$external" --mode "$mode" --rate "$rate" --scale 1x1 --same-as "$internal"
+    else
+        echo "Both panels must support $mode to mirror; leaving external layout unchanged." >&2
+        xrandr --output "$internal" --auto --scale 1x1 --primary
+    fi
+else
+    # Remove stale CRTCs after unplugging, then restore the panel's native mode.
+    for output in $(printf '%s\n' "$outputs" | awk '$2=="disconnected" {print $1}'); do
+        xrandr --output "$output" --off
+    done
+    xrandr --output "$internal" --auto --scale 1x1 --primary
+fi

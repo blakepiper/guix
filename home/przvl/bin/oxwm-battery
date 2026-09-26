@@ -1,0 +1,23 @@
+#!/bin/sh
+b=${ALPINEWS_BATTERY:-}
+case "$b" in ''|*[!a-zA-Z0-9_-]*) exit 0 ;; esac
+p=/sys/class/power_supply/$b
+[ -r "$p/capacity" ] || exit 0
+capacity=$(cat "$p/capacity")
+status=$(cat "$p/status")
+case "$status" in
+    Charging) printf 'Bat: %s%% +\n' "$capacity" ;;
+    Discharging)
+        energy='' power=''
+        if [ -r "$p/energy_now" ] && [ -r "$p/power_now" ]; then
+            energy=$p/energy_now power=$p/power_now
+        elif [ -r "$p/charge_now" ] && [ -r "$p/current_now" ]; then
+            energy=$p/charge_now power=$p/current_now
+        fi
+        if [ -n "$energy" ]; then
+            awk -v pct="$capacity" 'NR==1 {e=$1} NR==2 {p=$1} END {
+              if (p>0) {mins=int(60*e/p); printf "Bat: %s%% %dh%02dm\n",pct,int(mins/60),mins%60}
+              else printf "Bat: %s%%\n",pct}' "$energy" "$power"
+        else printf 'Bat: %s%%\n' "$capacity"; fi ;;
+    *) printf 'Bat: %s%%\n' "$capacity" ;;
+esac

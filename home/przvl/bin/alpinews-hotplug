@@ -1,0 +1,29 @@
+#!/bin/sh
+# Block on kernel-device events; never poll xrandr at idle.
+set -eu
+[ -n "${DISPLAY:-}" ] && [ -n "${XDG_RUNTIME_DIR:-}" ] || exit 1
+work=$(mktemp -d "$XDG_RUNTIME_DIR/alpinews-hotplug.XXXXXX")
+pid=''
+cleanup() {
+    trap - EXIT
+    [ -z "$pid" ] || kill "$pid" 2>/dev/null || :
+    [ -z "$pid" ] || wait "$pid" 2>/dev/null || :
+    rm -rf "$work"
+}
+trap cleanup EXIT
+trap 'exit 0' INT TERM HUP
+mkfifo "$work/events"
+udevadm monitor --udev --property --subsystem-match=drm > "$work/events" & pid=$!
+action='' hotplug=''
+while IFS= read -r line; do
+    case "$line" in
+        ACTION=*) action=${line#ACTION=} ;;
+        HOTPLUG=*) hotplug=${line#HOTPLUG=} ;;
+        '')
+            if [ "$action" = change ] && [ "$hotplug" = 1 ]; then
+                sleep 0.2
+                alpinews-monitors || :
+            fi
+            action='' hotplug='' ;;
+    esac
+done < "$work/events"
