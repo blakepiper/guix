@@ -2,6 +2,54 @@
 
 Checked on 2026-09-26 from the existing NixOS workstation, without activation.
 
+## Codex toolchain correction, 2026-09-26
+
+The earlier source preparation and metadata checks below did **not** validate
+the documented `rust@1.95.0` package specification in the pinned environment.
+The T490 exposed that error: name lookup offers Rust 1.93.0. Inspection of the
+clean Guix checkout at `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656` confirms
+that `rust-1.95` exists but is hidden from package discovery. The recipe's
+Scheme binding was correct; the bootstrap shell command and availability
+claim were wrong.
+
+- Reverified the original Codex archive against `sources/releases.json`.
+  The workspace declares edition 2024 with no workspace-wide MSRV; upstream's
+  toolchain file selects 1.95.0. Locked SQLx 0.9.0 requires Rust 1.94.0 on the
+  normal `codex-cli -> codex-state -> sqlx` path. Rust 1.93 is insufficient.
+  This establishes a dependency lower bound, not proof that Codex compiles
+  with 1.94. We retain upstream's 1.95.0 toolchain.
+- Recompared the existing prepared archive with the original release lockfile:
+  all 1,313 external dependency entries, checksums and Git revisions match.
+- Added assertions to `scripts/check.scm` that preparation and the recipe use
+  the identical Rust 1.95.0 package object and both `out` and `cargo` outputs.
+  The complete check script passed against the clean pinned Guix and Nonguix
+  sources using the local Nix-provided Guile/Guix runtime, including these
+  assertions and both service graphs. This is source evaluation, not a
+  daemon-backed time-machine check or a compiler execution.
+- Python syntax and `git diff --check` passed. No shell scripts changed, so
+  ShellCheck is not applicable to this fix. The editor recipe also selects
+  the `rust-1.95` Scheme binding directly and requires no change.
+- Attempted the preparation command below, pinned evaluation, Codex package
+  build, system build and Home build with the locally available Nix-packaged
+  Guix client. All stopped at the missing `/var/guix/daemon-socket/socket`.
+  Source preparation with Guix's Rust 1.95 and a daemon-backed Codex build remain
+  unverified here; the previous archive is not evidence of those checks.
+
+The corrected bootstrap command selects explicit package objects:
+
+```sh
+./scripts/guix shell -m scripts/codex-manifest.scm -- \
+  python3 scripts/prepare-codex.py
+```
+
+Run this on the T490, then the evaluation and package/Home build commands in
+the README. Both authenticated channel pins are unchanged. The user reports
+that the existing T490 system has built and activated, Linux 7.2.7 is booted,
+and Intel Wi-Fi works; the older hardware-test limitations below describe
+this development workstation, not that subsequent T490 result.
+
+## Earlier development checks
+
 - T490 System and Home Scheme configuration evaluation and service graph folding
   passed against the pinned Guix source revision
   `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656`, using the local Nix-provided

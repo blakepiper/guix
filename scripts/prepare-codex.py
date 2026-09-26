@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Prepare locked source dependencies, before entering Guix's offline sandbox.
 
-Requires Python 3.12+ and Cargo 1.95+. No upstream executables are downloaded.
+Run with ./scripts/guix shell -m scripts/codex-manifest.scm -- python3 scripts/prepare-codex.py
+The manifest supplies Python 3.12+ and Rust/Cargo 1.95.0, matching the recipe
+and upstream toolchain pin. No upstream executables are downloaded.
 Cargo verifies registry checksums and the exact Git revisions in Cargo.lock.
 The result is local source input, not a globally downloadable Guix substitute.
 """

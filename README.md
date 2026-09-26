@@ -61,13 +61,17 @@ As checked on 2026-09-26, the latest stable tags are
 [Codex rust-v0.157.1](https://github.com/openai/codex/releases/tag/rust-v0.157.1).
 The recipes build their source, with substitutes disabled for these two outputs.
 Normal Guix packages supply their compilers and libraries; their substitutes
-remain available. The channel provides Zig 0.16 and Rust 1.95.
+remain available. The channel provides Zig 0.16. Its discoverable `rust` is
+1.93.0, but it also defines the hidden `rust-1.95` package used by Codex.
+The preparation manifest selects that package and its Cargo output directly,
+matching the build recipe and upstream's Rust 1.95.0 toolchain pin. Rust 1.93
+is insufficient: the locked SQLx 0.9.0 dependency requires at least 1.94.
 
 Prepare Codex's locked sources before building Home:
 
 ```sh
 cd ~/guix
-./scripts/guix shell python rust@1.95.0 rust@1.95.0:cargo git nss-certs -- \
+./scripts/guix shell -m scripts/codex-manifest.scm -- \
   python3 scripts/prepare-codex.py
 ```
 

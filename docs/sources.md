@@ -20,10 +20,24 @@ Read-only local references inspected on 2026-09-26:
   checksum verification and exact Git revisions. The CLI dependency graph does
   not include V8; the separate code-mode host is not built. The package layout
   follows upstream's `codex-rs/install-context` and the daemon's requirements.
+  The workspace declares edition 2024 but no workspace-wide `rust-version`.
+  Its `rust-toolchain.toml` selects 1.95.0. The locked SQLx 0.9.0 crates
+  declare `rust-version = "1.94.0"`; `codex-cli -> codex-state -> sqlx` is
+  a normal dependency path, so Rust 1.93 cannot build this lockfile.
+  1.94 is a declared dependency lower bound, not a verified minimum for all
+  Codex source code; this port uses upstream's selected 1.95.0.
 - Guix `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656`:
   <https://codeberg.org/guix/guix>. `channels.scm` retains the official channel
   introduction for authenticated updates. Recent Zig and Rust definitions are
   needed by the source builds.
+  At this exact revision, `gnu/packages/rust.scm` defines `rust-1.95` with
+  compiler and Cargo outputs, inherited `hidden?` metadata, and a source
+  bootstrap through Rust 1.94.1. The discoverable `rust` package instead
+  inherits 1.93.0 and removes `hidden?`. Thus `rust@1.95.0` cannot resolve,
+  although the Scheme binding works. `scripts/codex-manifest.scm` selects the
+  binding directly, as the Codex recipe already did. Neither channel pin
+  needs changing; the T490's kernel, firmware and Nonguix compatibility are
+  unaffected. No external Rust installer or new toolchain recipe is needed.
 
 Imported upstream code retains its upstream license; this repository does not
 claim authorship of those patches or configurations. No sibling repository was

@@ -66,6 +66,8 @@
                   (lambda (port)
                     (display "{\"layoutVersion\":1,\"version\":\"0.157.1\",\"target\":\"x86_64-unknown-linux-gnu\",\"variant\":\"codex\",\"entrypoint\":\"bin/codex\",\"resourcesDir\":\"codex-resources\",\"pathDir\":\"codex-path\"}\n" port)))
                 (install-file "../LICENSE" (string-append #$output "/share/licenses/codex"))))))))
+    ;; Match scripts/codex-manifest.scm and upstream rust-toolchain.toml.
+    ;; This binding exists at our channel pin but is hidden from name lookup.
     (native-inputs (list rust-1.95 (list rust-1.95 "cargo") pkg-config cmake-minimal clang))
     (inputs (list openssl sqlite zlib (list zstd "lib") libcap bubblewrap ripgrep))
     (supported-systems '("x86_64-linux"))
