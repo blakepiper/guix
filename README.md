@@ -18,13 +18,13 @@ BusyBox and OpenRC. Elogind manages seats, power actions and suspend inhibition.
 | `channels.scm` | Pinned authenticated Guix and Nonguix channels |
 | `modules/workstation/system/` | Shared OS, desktop services, reusable ThinkPad battery service |
 | `modules/workstation/home/` | Shared user applications and Guix Home services |
-| `modules/workstation/packages/` | Source recipes for OXWM, Codex, clipboard listener and editor tooling |
+| `modules/workstation/packages/` | Package recipes for OXWM, Codex, clipboard listener and editor tooling |
 | `hosts/t490/system.scm` | T490 composition and input hardware settings |
 | `hosts/t490/hardware.scm` | Filesystems and swap, to verify on the actual laptop |
 | `hosts/t490/home.scm` | Host display settings |
 | `home/przvl/` | Desktop configuration and session helpers |
-| `sources/` | Release pins, patches and ignored generated source archive |
-| `scripts/` | Pinned Guix invocation, preparation and evaluation |
+| `sources/` | Release pins, patches and copied source inputs |
+| `scripts/` | Pinned Guix invocation and configuration checks |
 
 To add a host, create `hosts/NAME/{system,hardware,home}.scm` and compose the same
 shared modules. Keep disk identities, display connectors, battery behavior and
@@ -54,57 +54,43 @@ compromise with [GNU's position on service-based computing](https://www.gnu.org/
 No login credentials or hosted provider configuration are included here.
 LibreWolf is installed with its defaults, without imported Firefox policies.
 
-## Source builds
+## Pinned application packages
 
-As checked on 2026-09-26, the latest stable tags are
-[OXWM v0.13.0](https://github.com/tonybanters/oxwm/tree/v0.13.0) and
-[Codex rust-v0.157.1](https://github.com/openai/codex/releases/tag/rust-v0.157.1).
-The recipes build their source, with substitutes disabled for these two outputs.
-Normal Guix packages supply their compilers and libraries; their substitutes
-remain available. The channel provides Zig 0.16. Its discoverable `rust` is
-1.93.0, but it also defines the hidden `rust-1.95` package used by Codex.
-The preparation manifest selects that package and its Cargo output directly,
-matching the build recipe and upstream's Rust 1.95.0 toolchain pin. Rust 1.93
-is insufficient: the locked SQLx 0.9.0 dependency requires at least 1.94.
+OXWM 0.13.0 remains a pinned source build using the channel's Zig 0.16. Its
+recipe replaces the Lua download with a pinned Guix source input and limits
+build parallelism to two jobs.
 
-Prepare Codex's locked sources before building Home:
+Codex **0.157.1** uses OpenAI's official
+[`codex-x86_64-unknown-linux-musl.tar.gz`](https://github.com/openai/codex/releases/download/rust-v0.157.1/codex-x86_64-unknown-linux-musl.tar.gz)
+from [the versioned release](https://github.com/openai/codex/releases/tag/rust-v0.157.1).
+Guix verifies its fixed SHA-256, extracts the single static executable, and
+installs a `codex` launcher in the Home profile. No local Codex compilation or
+preparation step is needed. Home activation performs no download or installer
+step; the artifact is fetched and verified as a Guix build input.
 
-```sh
-cd ~/guix
-./scripts/guix shell -m scripts/codex-manifest.scm -- \
-  python3 scripts/prepare-codex.py
-```
+The launcher supplies Guix's bubblewrap and ripgrep on PATH for sandboxing and
+search and defaults to upstream's `--no-daemon` mode. Without that option,
+0.157.1 tries to provision a background daemon from package metadata absent
+from the single-binary archive. Local interactive use and `codex exec` need
+no adjacent resources or separate exec binary in standalone mode. Explicit
+`--remote` options are passed through without adding `--no-daemon`.
+Managed-daemon provisioning and its local agents overview require a complete
+upstream package and are not provisioned by this recipe.
+The launcher preserves `HOME`, `CODEX_HOME`, authentication and configuration.
+No credentials are included. Update this package through the repository and
+Guix Home, rather than running Codex's own installer/updater.
 
-The script verifies the upstream tarball SHA-256, adjusts only local workspace
-versions left stale by upstream release tagging, and runs `cargo vendor --locked`.
-The resulting ignored archive contains sources, not compiled binaries. Keep it
-with your installation media if installing offline. Vendored sources need about
-2 GB unpacked; Rust builds need substantially more space and RAM. Both recipes
-limit build parallelism to two jobs for the laptop.
-
-Guix imports that archive into its content-addressed store and builds with
-`cargo --frozen` in the offline sandbox. The recipe temporarily moves the vendor
-directory outside the source tree during GNU source-rewriting phases, then
-restores it before Cargo runs. This preserves Cargo's original checksums while
-retaining shebang handling for other sources and installed files. Existing
-prepared archives do not need regeneration for this recipe change.
-The optional V8 code-mode host is not
-included; ordinary CLI/exec binaries and the daemon package layout are included.
-Do not enable features requiring that optional host until a source recipe exists.
-
-Tags and hashes never refresh at activation time. For updates, check upstream's
-stable tags, review the new source and build requirements, update
-`sources/releases.json` and the matching Scheme recipes, regenerate the archive,
-and rerun the checks and builds. Do not replace pins with moving `latest` URLs.
+Versions and hashes are recorded in `sources/releases.json` and the recipes.
+For updates, verify the exact release assets and their runtime requirements,
+update both records, and rerun evaluation and package/Home builds. The fixed
+hash rejects changed upstream bytes even if a release asset is replaced.
 
 ## Check and build
 
 ```sh
 ./scripts/guix repl -L modules scripts/check.scm
-./scripts/guix shell bash coreutils file tar gzip -- \
-  ./scripts/guix repl -L modules scripts/check-codex-vendor.scm
 ./scripts/guix build -L modules -e '(@ (workstation packages oxwm) oxwm-source)'
-./scripts/guix build -L modules -e '(@ (workstation packages codex) codex-source)'
+./scripts/guix build -L modules -e '(@ (workstation packages codex) codex)'
 ./scripts/guix system build -L modules hosts/t490/system.scm
 ./scripts/guix home build -L modules hosts/t490/home.scm
 git diff --check
@@ -112,11 +98,6 @@ git diff --check
 
 Evaluation is not a successful build or a hardware test. See
 [validation notes](docs/validation.md) for what has actually been checked.
-The vendor regression check unpacks a temporary copy of the prepared archive
-(allow about 2 GB), verifies Cargo's recorded file checksums, and runs the
-recipe's pre-build phases. It checks that vendor bytes remain unchanged and
-that non-vendored source/generated scripts still receive shebang fixes. It
-does not compile Codex or replace the daemon-backed package/Home builds.
 
 ## Install on the T490
 
@@ -172,8 +153,7 @@ Boot the new generation, then check `nmcli device status` and
 `nmcli device wifi list`. Connect with
 `nmcli --ask device wifi connect "YOUR_SSID"`. The kernel changes after reboot;
 the running installer is unaffected. Keep Ethernet until Wi-Fi is verified.
-No reinstall is required. Home setup and Codex source preparation are separate
-from this system-only change.
+No reinstall is required. Home setup is separate from this system-only change.
 
 Subsequent system changes use:
 

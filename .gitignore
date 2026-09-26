@@ -1,4 +1,2 @@
-/sources/*.tar.gz
-/sources/.prepare-*
 /result*
 __pycache__/

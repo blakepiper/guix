@@ -1,160 +1,81 @@
 # Validation
 
-Checked on 2026-09-26 from the existing NixOS workstation, without activation.
+## Official Codex musl package, 2026-09-26
 
-## Codex native C/C++ toolchain, 2026-09-26
+The supported Codex package now installs the official binary at the user's
+request, following unsuccessful source builds on the real T490. Earlier
+source-build debugging details remain in Git history, not active instructions.
 
-The T490's daemon-backed build passed the vendor checks after `3a03277`, then
-failed when the locked `cc` crate (1.2.55) tried to execute `cc`. At this Guix
-pin, GNU's implicit inputs include GCC, libc and Binutils, but plain GCC does
-not install the `cc` alias. The recipe's plain `clang` package supplies
-libclang for bindgen, not the `clang-toolchain` aliases. The replaced GNU
-configure phase only sets Cargo/library environment variables; it does not
-run Autoconf compiler discovery or set `CC`. On this Linux target cc-rs
-defaults to `cc` (and `c++` for C++), rather than searching for `gcc`.
+- Release: `openai/codex`, `rust-v0.157.1`; the GitHub release API lists asset
+  `589592614`, `codex-x86_64-unknown-linux-musl.tar.gz`, size 107,868,387 bytes.
+- Download URL:
+  <https://github.com/openai/codex/releases/download/rust-v0.157.1/codex-x86_64-unknown-linux-musl.tar.gz>.
+- Independently computed SHA-256 matches the API's asset digest:
+  `e98c1e8e028e8137fa2d2415c82ec58e7b3701a627e3554aace5b3ca31454af2`.
+  GitHub reports this release as not immutable; the version-specific URL plus
+  fixed hash makes any replacement fail verification rather than silently
+  change the package.
+- Archive inspection found exactly one executable:
+  `codex-x86_64-unknown-linux-musl`, 285,340,072 bytes, mode 0755.
+- `file` reports ELF x86-64 static PIE. `readelf` shows no `PT_INTERP` and no
+  `DT_NEEDED` entries. No FHS dynamic loader, patchelf, or shared-library shim
+  is needed for the upstream executable.
+- Unmodified binary `--version`, `--help` and `exec --help` execute on this
+  NixOS development machine. Tests use a disposable HOME/CODEX_HOME and no
+  account data. They do not establish authenticated API access or T490 boot.
+- Inspected the exact release's README, `install-context`, CLI dispatch,
+  TUI server selection and Linux sandbox launcher. The single binary supports
+  standalone CLI/exec use without a sibling `codex-exec` or package metadata.
+  It can use system bubblewrap and ripgrep on PATH; the Guix wrapper supplies
+  those. An actual interactive test exposed that default startup tries to
+  provision a daemon and fails without a complete upstream package. Repeating
+  with `--no-daemon` reached the normal sign-in screen. The launcher therefore
+  defaults to that supported standalone mode, preserving explicit `--remote`
+  options. Managed-daemon provisioning/local agents overview are not supported
+  by this standalone layout. We do not invent daemon metadata or resources.
 
-Added the pinned channel's `gcc-toolchain` (GCC 14) as a native input. Its
-Guix recipe explicitly creates `bin/cc -> gcc` and combines GCC/C++, libc
-headers/libraries, Binutils and Guix's linker wrapper. Clang remains available
-for bindgen. No host compiler paths or compiler-installation scripts are used.
+The recipe uses a trivial unpack/copy/wrap builder with only tar/gzip as native
+inputs. Offline version/help checks run during packaging. There is no local
+source archive or bootstrap prerequisite, no compiler input, and no activation
+installer. The separate Tree-sitter editor recipe still uses its pinned Rust
+compiler; it was not changed.
 
-`scripts/check.scm` now requires that native input. The actual build phase
-also checks `cc`, `c++`, `ar`, `as`, `ld` and `ranlib`, then compiles a C object,
-archives it, links it into a C++ program using the standard library, and runs
-that program before invoking Cargo. These checks are unconditional, including
-when optional package tests are disabled; the existing CLI checks remain.
-The probe writes only to its own build directory, never to vendored sources.
+Current development-machine validation:
 
-Earlier source preparation, Cargo metadata, Scheme evaluation and the vendor
-phase regression did not compile native dependencies. The vendor regression
-deliberately stops before `build`. This development environment also has a
-Nix-provided `cc`, whose presence cannot establish tool availability in a Guix
-derivation. The actual sandbox's missing alias was therefore untested until
-the T490 build.
+- `scripts/check.scm` passed against the exact pinned Guix and Nonguix sources
+  with the Nix-provided Guile/Guix runtime. This evaluates the binary package,
+  release URL/hash/input assertions, complete T490 Home and system definitions,
+  and both service graphs. The obsolete preparation files/archive were absent.
+- The raw executable also passed version and exec-help checks in a bubblewrap
+  namespace without `/lib`, `/lib64`, `/nix/store` or a shell, confirming it
+  does not depend on the host's FHS compatibility loader.
+- Executed the actual recipe's unpack/copy/wrap/smoke-check builder with local
+  Nix tool paths substituted for Guix inputs. All checks passed; the installed
+  hidden executable is byte-for-byte identical to the extracted upstream file.
+  This exercises the builder, not a Guix derivation or its exact helper versions.
+- The resulting launcher reached interactive sign-in without an explicit
+  `--no-daemon` argument. Explicit standalone and remote options were preserved.
+  With an otherwise empty PATH, `codex sandbox` ran a shell command and found
+  the wrapper's bubblewrap/ripgrep. This used local bubblewrap 0.12.0; the
+  channel's 0.11.0 still needs the T490 integration test. No sign-in was attempted.
+- ShellCheck passed for the generated launcher, and `git diff --check` passed.
+  Repository searches found no remaining Codex preparation/vendor/toolchain
+  instructions. Rust requirements remaining in the editor recipe are unrelated.
+- The repository's time-machine check and Codex/system/Home builds were
+  attempted, but all stop at the missing `/var/guix/daemon-socket/socket`.
+  No daemon-backed Guix build or Home activation occurred on this machine.
 
-Local validation against the pinned Scheme sources with the Nix-provided
-Guile/Guix runtime:
-
-- System/Home evaluation passed, including the new native-input assertion.
-- The vendor phase regression passed again: all 1,313 crates' recorded file
-  checksums verified, and the vendor tree remained unchanged.
-- Executed the recipe's native compile/archive/link/run probe with the local
-  Nix GCC 15.3 toolchain, intercepting only the subsequent Cargo invocation.
-  It passed; a second run with an empty tool PATH correctly rejected the
-  missing compiler. This validates the probe, not Guix GCC 14 or a Codex build.
-- `git diff --check` passed. No shell scripts changed; ShellCheck does not
-  apply to these Scheme changes.
-
-The pinned evaluation and Codex/system/Home builds were attempted here but
-still stop at the missing `/var/guix/daemon-socket/socket`. The T490's real
-daemon-backed rebuild remains necessary. Source preparation is unchanged:
-reuse the existing archive. Codex 0.157.1, Rust 1.95, channel pins, Cargo
-`--frozen`, dependency checksums and vendor protection are unchanged.
-
-## Codex vendor checksum protection, 2026-09-26
-
-The user reports successful source preparation with the explicit Rust 1.95
-manifest on the T490. Its first daemon-backed Home build then failed on Cargo's
-checksum for `vendor/autocfg/tests/wrap_ignored`. This is a build failure,
-not a source-preparation or toolchain-discovery failure.
-
-At the pinned Guix revision, the relevant GNU phases run in this order:
-`unpack`, `bootstrap`, `patch-usr-bin-file`, `patch-source-shebangs`, our
-`configure`, `patch-generated-file-shebangs`, then our `build`.
-`patch-source-shebangs` scans every regular source file, even non-executable
-test fixtures. It changes the autocfg wrapper's `#!/bin/bash` to the Bash
-store path. `patch-generated-file-shebangs` scans executable files and rewrites
-Makefile `SHELL` assignments. `patch-usr-bin-file` can also rewrite executable
-`configure` scripts. None of these phases understands Cargo checksum manifests.
-
-The recipe now moves the vendor directory outside the unpacked source after
-`unpack`, then restores it before `build`, accounting for `configure` changing
-directory to `codex-rs`. All normal rewriting phases remain enabled for other
-sources; the post-install `patch-shebangs` phase is unchanged. Codex installs
-native executables, not vendored test wrappers. If a dependency later needs a
-script adaptation, it must use an explicit interpreter or a separate build
-copy rather than modifying the authenticated vendor tree.
-
-`scripts/check-codex-vendor.scm` checks the prepared archive's original Cargo
-file hashes, executes the recipe's actual pre-build phase expressions in a
-temporary tree, and compares a recursive hash of the entire vendor directory,
-including checksum manifests. Controls check that non-vendored source scripts,
-generated scripts, configure commands and Makefile shells still get patched.
-The test evaluates only pre-build code; approximate output references in the
-unused install phase are not executed. It does not compile or run Codex.
-
-Local results against the clean pinned Guix source, using the Nix-provided
-Guile/Guix runtime:
-
-- Reproduced the autocfg wrapper mutation with the original GNU phases on a
-  disposable vendor copy. `patch-source-shebangs` changed 658 files with this
-  machine's interpreter PATH. The generated-file phase changed three more:
-  `bzip2-sys/bzip2-1.0.8/Makefile`, `r-efi-5.3.0/Makefile` and
-  `r-efi/Makefile`. The `/usr/bin/file` phase changed no vendored file in this
-  archive, but remains covered by the protection and regression controls.
-- The fixed recipe's regression check passed: original checksums for all
-  1,313 vendored crates verified, the complete vendor tree survived unchanged,
-  and the non-vendor rewriting controls passed.
-- A negative control removed only the two new protection phases from the
-  evaluated phase list. The same test exited with status 1 and
-  `Pre-build phases changed the Cargo vendor tree`, confirming it catches
-  the original failure mechanism.
-- `scripts/check.scm` passed, including Rust/Cargo consistency, the T490
-  system/Home service graphs and the shared free-kernel defaults.
-- `git diff --check` passed. No shell scripts changed; ShellCheck is not
-  applicable to the Scheme recipe and regression script.
-
-The pinned time-machine evaluation, regression command, Codex build, system
-build and Home build were attempted here and remain blocked by the missing
-`/var/guix/daemon-socket/socket`. A successful daemon-backed Codex/Home rebuild
-on the T490 is still required. Existing prepared archives can be reused;
-the source pin, lockfile, Rust 1.95 toolchain and both channel pins are unchanged.
-
-## Codex toolchain correction, 2026-09-26
-
-The earlier source preparation and metadata checks below did **not** validate
-the documented `rust@1.95.0` package specification in the pinned environment.
-The T490 exposed that error: name lookup offers Rust 1.93.0. Inspection of the
-clean Guix checkout at `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656` confirms
-that `rust-1.95` exists but is hidden from package discovery. The recipe's
-Scheme binding was correct; the bootstrap shell command and availability
-claim were wrong.
-
-- Reverified the original Codex archive against `sources/releases.json`.
-  The workspace declares edition 2024 with no workspace-wide MSRV; upstream's
-  toolchain file selects 1.95.0. Locked SQLx 0.9.0 requires Rust 1.94.0 on the
-  normal `codex-cli -> codex-state -> sqlx` path. Rust 1.93 is insufficient.
-  This establishes a dependency lower bound, not proof that Codex compiles
-  with 1.94. We retain upstream's 1.95.0 toolchain.
-- Recompared the existing prepared archive with the original release lockfile:
-  all 1,313 external dependency entries, checksums and Git revisions match.
-- Added assertions to `scripts/check.scm` that preparation and the recipe use
-  the identical Rust 1.95.0 package object and both `out` and `cargo` outputs.
-  The complete check script passed against the clean pinned Guix and Nonguix
-  sources using the local Nix-provided Guile/Guix runtime, including these
-  assertions and both service graphs. This is source evaluation, not a
-  daemon-backed time-machine check or a compiler execution.
-- Python syntax and `git diff --check` passed. No shell scripts changed, so
-  ShellCheck is not applicable to this fix. The editor recipe also selects
-  the `rust-1.95` Scheme binding directly and requires no change.
-- Attempted the preparation command below, pinned evaluation, Codex package
-  build, system build and Home build with the locally available Nix-packaged
-  Guix client. All stopped at the missing `/var/guix/daemon-socket/socket`.
-  Source preparation with Guix's Rust 1.95 and a daemon-backed Codex build remain
-  unverified here; the previous archive is not evidence of those checks.
-
-The corrected bootstrap command selects explicit package objects:
+The user reports that the actual T490 system is already activated with Linux
+7.2.7 and working Intel Wi-Fi. Its final integration check for this change is:
 
 ```sh
-./scripts/guix shell -m scripts/codex-manifest.scm -- \
-  python3 scripts/prepare-codex.py
+./scripts/guix home build -L modules hosts/t490/home.scm
+# Only after the build succeeds:
+./scripts/guix home reconfigure -L modules hosts/t490/home.scm
 ```
 
-Run this on the T490, then the evaluation and package/Home build commands in
-the README. Both authenticated channel pins are unchanged. The user reports
-that the existing T490 system has built and activated, Linux 7.2.7 is booted,
-and Intel Wi-Fi works; the older hardware-test limitations below describe
-this development workstation, not that subsequent T490 result.
+No Codex preparation command is required. Other Home applications retain their
+own existing build requirements.
 
 ## Earlier development checks
 
@@ -172,26 +93,12 @@ this development workstation, not that subsequent T490 result.
   in an isolated Xvfb display, loaded the config, and registered 66 bindings.
 - Picom started in the isolated Xvfb display using the repository configuration,
   with no config errors. Windows are configured opaque in both focus states.
-- `scripts/prepare-codex.py` completed; the upstream archive hash was verified.
-  Cargo vendoring succeeded with the corrected local workspace versions and
-  `--locked`. All **1,313 external dependency entries**, including checksums and
-  Git revisions, matched the original upstream lockfile exactly.
-- Cargo metadata resolved offline with `--frozen`. The CLI's non-development
-  dependency graph does not contain the optional V8 runtime.
-- Whitespace checks passed for all new files. ShellCheck passed for the session,
-  helpers and wrapper. Python source was
-  parsed and executed during source preparation.
-
-Prepared local Codex source archive:
-
-```
-ba4a29bf846ccf3a3edd50cb082dabc624bcacabb975313ca4b7d2ead2f52ad3  codex-0.157.1-vendored.tar.gz
-```
+- Whitespace and ShellCheck checks passed for the original session helpers
+  and wrapper. Those files are unchanged by the Codex binary migration.
 
 **Still required on a machine with the Guix daemon:** Guix builds of the custom
 packages, system and Home closure. The attempted system build here stopped
-because `/var/guix/daemon-socket/socket` does not exist. Codex has not been compiled
-or runtime-tested here. No full closure, installer image, boot, battery, suspend,
+because `/var/guix/daemon-socket/socket` does not exist. No full closure, installer image, boot, battery, suspend,
 network, sound or physical T490 graphics test is claimed.
 
 Before installation, verify the actual storage identities in

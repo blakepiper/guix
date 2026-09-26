@@ -16,37 +16,24 @@ Read-only local references inspected on 2026-09-26:
   Lua download is replaced with Guix's pinned Lua 5.4.8 source input.
 - Codex `rust-v0.157.1`:
   <https://github.com/openai/codex/releases/tag/rust-v0.157.1>. Apache-2.0 license.
-  Source tarball hash is in `sources/releases.json`. Source vendoring uses Cargo's
-  checksum verification and exact Git revisions. The CLI dependency graph does
-  not include V8; the separate code-mode host is not built. The package layout
-  follows upstream's `codex-rs/install-context` and the daemon's requirements.
-  The workspace declares edition 2024 but no workspace-wide `rust-version`.
-  Its `rust-toolchain.toml` selects 1.95.0. The locked SQLx 0.9.0 crates
-  declare `rust-version = "1.94.0"`; `codex-cli -> codex-state -> sqlx` is
-  a normal dependency path, so Rust 1.93 cannot build this lockfile.
-  1.94 is a declared dependency lower bound, not a verified minimum for all
-  Codex source code; this port uses upstream's selected 1.95.0.
-  The GNU build phases normally rewrite source shebangs, generated Makefile
-  shells and `/usr/bin/file` references recursively. Vendored crates retain
-  Cargo's original checksums, so the recipe moves `codex-rs/vendor` to a sibling
-  of the unpacked source immediately after unpacking and restores it just
-  before compilation. No checksum files or lock entries are regenerated, and
-  ordinary source/output shebang patching remains enabled. A direct switch to
-  this pin's Cargo build system would not preserve these invariants: its
-  configure phase removes Cargo.lock and its checksum phase writes empty
-  per-file checksum maps.
+  At the user's request, use the official Linux x86_64 musl executable instead
+  of a local compilation. The release API lists asset ID `589592614`, named
+  `codex-x86_64-unknown-linux-musl.tar.gz`; its download URL and independently
+  verified SHA-256 are pinned in `sources/releases.json` and the package.
+  The archive contains one static PIE executable. Upstream's README explicitly
+  documents renaming that executable to `codex`. The package uses Guix's
+  trivial build system to unpack it and wrap PATH with bubblewrap and ripgrep.
+  Upstream's `install-context` and `linux-sandbox` modules support these tools
+  on PATH without adjacent resource directories; `codex exec` is built in.
+  Version 0.157.1's default interactive startup nevertheless tries to provision
+  a daemon and fails without complete package metadata. The launcher defaults
+  to upstream's supported `--no-daemon` mode (preserving explicit `--remote`
+  options), which successfully opens onboarding with disposable state. No
+  synthetic daemon package, updater, configuration or credentials are installed.
 - Guix `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656`:
   <https://codeberg.org/guix/guix>. `channels.scm` retains the official channel
-  introduction for authenticated updates. Recent Zig and Rust definitions are
-  needed by the source builds.
-  At this exact revision, `gnu/packages/rust.scm` defines `rust-1.95` with
-  compiler and Cargo outputs, inherited `hidden?` metadata, and a source
-  bootstrap through Rust 1.94.1. The discoverable `rust` package instead
-  inherits 1.93.0 and removes `hidden?`. Thus `rust@1.95.0` cannot resolve,
-  although the Scheme binding works. `scripts/codex-manifest.scm` selects the
-  binding directly, as the Codex recipe already did. Neither channel pin
-  needs changing; the T490's kernel, firmware and Nonguix compatibility are
-  unaffected. No external Rust installer or new toolchain recipe is needed.
+  introduction for authenticated updates. Its Zig and Rust definitions remain
+  relevant to OXWM and the separate Tree-sitter editor recipe, respectively.
 
 Imported upstream code retains its upstream license; this repository does not
 claim authorship of those patches or configurations. No sibling repository was
@@ -54,7 +41,7 @@ modified. No installer or existing system configuration was activated.
 
 Intentional changes from AlpineWS: GNU userland and libc, Shepherd system
 services, Elogind session/power management, Guix Home PipeWire services, Picom,
-LibreWolf, source-built Codex, and packaged st. CPU microcode remains omitted.
+LibreWolf, the official pinned Codex binary, and packaged st. CPU microcode remains omitted.
 Intel Wi-Fi firmware was subsequently enabled only for the T490 at the user's
 request. Input permissions are managed through Elogind
 and udev rather than Alpine's broad input-group setup.

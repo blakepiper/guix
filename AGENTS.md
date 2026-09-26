@@ -6,9 +6,10 @@
 - Keep Linux-libre and free firmware as the shared defaults. The user authorized
   a T490-only exception: standard Linux and iwlwifi-firmware from the pinned,
   authenticated Nonguix channel. Do not expand that exception to other hosts or
-  nonfree packages, or introduce prebuilt application binaries.
-- Keep OXWM and Codex as pinned source builds. Update release metadata and
-  recipes together; source preparation must preserve external lock entries.
+  nonfree packages, or introduce other prebuilt application binaries.
+- Keep OXWM as a pinned source build. Codex is the user-authorized exception:
+  use the official versioned Linux x86_64 musl release with a fixed SHA-256.
+  Update release metadata and recipes together; do not use mutable installers.
 - Picom must keep all windows opaque. Do not add transparency, fading or
   shadows without an explicit request.
 - Preserve unrelated changes. Do not partition disks, activate the system,

@@ -19,7 +19,7 @@
   (home-environment
    (packages
     (append
-     (list oxwm-source codex-source clipwatch)
+     (list oxwm-source codex clipwatch)
      editor-packages
      (specifications->packages
       '("librewolf" "picom" "st" "dmenu" "xfe" "git" "curl"
