@@ -2,6 +2,55 @@
 
 Checked on 2026-09-26 from the existing NixOS workstation, without activation.
 
+## Codex native C/C++ toolchain, 2026-09-26
+
+The T490's daemon-backed build passed the vendor checks after `3a03277`, then
+failed when the locked `cc` crate (1.2.55) tried to execute `cc`. At this Guix
+pin, GNU's implicit inputs include GCC, libc and Binutils, but plain GCC does
+not install the `cc` alias. The recipe's plain `clang` package supplies
+libclang for bindgen, not the `clang-toolchain` aliases. The replaced GNU
+configure phase only sets Cargo/library environment variables; it does not
+run Autoconf compiler discovery or set `CC`. On this Linux target cc-rs
+defaults to `cc` (and `c++` for C++), rather than searching for `gcc`.
+
+Added the pinned channel's `gcc-toolchain` (GCC 14) as a native input. Its
+Guix recipe explicitly creates `bin/cc -> gcc` and combines GCC/C++, libc
+headers/libraries, Binutils and Guix's linker wrapper. Clang remains available
+for bindgen. No host compiler paths or compiler-installation scripts are used.
+
+`scripts/check.scm` now requires that native input. The actual build phase
+also checks `cc`, `c++`, `ar`, `as`, `ld` and `ranlib`, then compiles a C object,
+archives it, links it into a C++ program using the standard library, and runs
+that program before invoking Cargo. These checks are unconditional, including
+when optional package tests are disabled; the existing CLI checks remain.
+The probe writes only to its own build directory, never to vendored sources.
+
+Earlier source preparation, Cargo metadata, Scheme evaluation and the vendor
+phase regression did not compile native dependencies. The vendor regression
+deliberately stops before `build`. This development environment also has a
+Nix-provided `cc`, whose presence cannot establish tool availability in a Guix
+derivation. The actual sandbox's missing alias was therefore untested until
+the T490 build.
+
+Local validation against the pinned Scheme sources with the Nix-provided
+Guile/Guix runtime:
+
+- System/Home evaluation passed, including the new native-input assertion.
+- The vendor phase regression passed again: all 1,313 crates' recorded file
+  checksums verified, and the vendor tree remained unchanged.
+- Executed the recipe's native compile/archive/link/run probe with the local
+  Nix GCC 15.3 toolchain, intercepting only the subsequent Cargo invocation.
+  It passed; a second run with an empty tool PATH correctly rejected the
+  missing compiler. This validates the probe, not Guix GCC 14 or a Codex build.
+- `git diff --check` passed. No shell scripts changed; ShellCheck does not
+  apply to these Scheme changes.
+
+The pinned evaluation and Codex/system/Home builds were attempted here but
+still stop at the missing `/var/guix/daemon-socket/socket`. The T490's real
+daemon-backed rebuild remains necessary. Source preparation is unchanged:
+reuse the existing archive. Codex 0.157.1, Rust 1.95, channel pins, Cargo
+`--frozen`, dependency checksums and vendor protection are unchanged.
+
 ## Codex vendor checksum protection, 2026-09-26
 
 The user reports successful source preparation with the explicit Rust 1.95
