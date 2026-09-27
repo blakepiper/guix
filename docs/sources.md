@@ -228,3 +228,12 @@ writer merely because the one-shot service is unchanged. No sources copied.
 Zen's ASUF1208 touchpad was subsequently verified as XInput product 2808:0218
 and explicitly enabled for natural scrolling too. The helper matches both
 host-selected product IDs and leaves unrelated pointer devices unchanged.
+
+## Zen readable desktop modes, 2026-09-27
+
+After first-boot use, the native panel desktop was too small. Zen now selects
+1920×1200 at approximately 60 Hz standalone and 1920×1080 when mirrored
+(internal approximately 60 Hz, external 120 Hz). These modes were advertised
+by the live panel and the earlier dock display query. This enlarges the entire
+existing desktop without per-application overrides; it trades native pixel
+resolution and the standalone 120 Hz mode for readability. T490 is unchanged.

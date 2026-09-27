@@ -31,10 +31,10 @@ describes its KMS/glamor support. No legacy Intel DDX, force-probe kernel
 arguments, custom modelines or global DPI overrides are added. Picom's existing
 XRender configuration, including its current vsync setting, is preserved.
 
-Home discovers the eDP panel and dock display and mirrors both at 2560×1440:
-the internal panel runs at approximately 60 Hz and the external at 144 Hz.
-When undocked, it restores 2880×1800 at 120 Hz, falling back to the preferred
-mode if needed. The first connected DP/HDMI output is selected automatically.
+Home discovers the eDP panel and dock display and mirrors both at 1920×1080:
+the internal panel runs at approximately 60 Hz and the external at 120 Hz.
+When undocked, it uses 1920×1200 at approximately 60 Hz for readability
+(50% larger than native), falling back to the preferred mode if needed. The first connected DP/HDMI output is selected automatically.
 On first boot, the connectors were eDP-1 and DP-1-4-4.
 
 The attached Gaming Keyboard reports USB ID 1fc9:e8c7. Home applies
