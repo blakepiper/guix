@@ -157,7 +157,8 @@ OXWM exits. Session output goes to `~/.local/state/oxwm/session.log` (or under
 `$XDG_STATE_HOME`), with one previous session retained. There is no dependency
 on `~/.xsession-errors` or a display manager.
 
-`Super+Enter` runs `st -e bash` directly through OXWM's logged command launcher.
+`Super+Enter` runs `st -f monospace:size=14 -e bash` directly through OXWM's
+logged command launcher, using a 14-point terminal font.
 Home supplies st and interactive Bash; no terminal wrapper is needed. Launch
 commands and their inherited stderr go to the session log. Home imports the
 desktop helper scripts with executable permissions preserved in the store.
@@ -166,6 +167,7 @@ After a terminal/configuration change, run
 with `Super+Shift+Q`, then run `startx` again. No system reconfigure is needed
 for this terminal fix.
 
+Home includes `gammastep` for manual screen color-temperature adjustment.
 Home also provides `ssh-keygen` and the other OpenSSH tools, plus `fastfetch`
 from Guix's lightweight `fastfetch-minimal` package. Run `fastfetch` whenever
 you want a system summary; it does not run automatically at shell startup.

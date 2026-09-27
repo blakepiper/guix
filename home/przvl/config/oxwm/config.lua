@@ -155,5 +155,5 @@ oxwm.key.bind({}, "XF86MonBrightnessDown", oxwm.spawn("alpinews-brightness down"
 -- Core terminal/window bindings.
 -- spawn_terminal() accepts only an executable name and hides exec failures.
 -- The command path supports arguments and logs startup errors to session.log.
-oxwm.key.bind({ mod }, "Return", oxwm.spawn("exec st -e bash"))
+oxwm.key.bind({ mod }, "Return", oxwm.spawn("exec st -f monospace:size=14 -e bash"))
 oxwm.key.bind({ mod }, "Q", oxwm.client.kill())
