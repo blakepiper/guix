@@ -32,6 +32,12 @@
                (scandir "/sys/class/power_supply"
                         (lambda (name) (string-prefix? "BAT" name))))))))
     (list
+     ;; Activation runs at boot and every system reconfigure, even when the
+     ;; existing one-shot Shepherd service has no reason to restart.
+     (simple-service
+      (symbol-append name '-activation) activation-service-type
+      #~(unless (zero? (system* #$apply-limit))
+          (error "Could not apply battery charge ceiling")))
      (simple-service
       name shepherd-root-service-type
       (list (shepherd-service

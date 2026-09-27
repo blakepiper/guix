@@ -17,7 +17,7 @@
   #:use-module (workstation packages desktop)
   #:export (make-workstation-home))
 
-(define* (make-workstation-home #:key (display-config "") (keyboard-config ""))
+(define* (make-workstation-home #:key (display-config "") (keyboard-config "") (pointer-config ""))
   (home-environment
    (packages
     (append
@@ -64,11 +64,12 @@
                     (repository-file (string-append "home/przvl/bin/" name)
                                      #:recursive? #t)))
             '("workstation-lock" "control-menu" "alpinews-monitors"
-              "alpinews-hotplug" "alpinews-keyboards" "alpinews-brightness" "oxwm-cpu" "oxwm-battery"
+              "alpinews-hotplug" "alpinews-keyboards" "alpinews-pointers" "alpinews-brightness" "oxwm-cpu" "oxwm-battery"
               "screenshot-region" "clipboard-history"))))
      (simple-service
       'workstation-config home-xdg-configuration-files-service-type
       `(("oxwm/config.lua" ,(repository-file "home/przvl/config/oxwm/config.lua"))
+        ("alpinews/pointer.conf" ,(plain-file "pointer.conf" pointer-config))
         ("alpinews/keyboard.conf" ,(plain-file "keyboard.conf" keyboard-config))
         ("alpinews/display.conf" ,(plain-file "display.conf" display-config))
         ("picom/picom.conf" ,(repository-file "home/przvl/config/picom.conf"))

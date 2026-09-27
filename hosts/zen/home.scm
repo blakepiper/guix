@@ -2,6 +2,8 @@
 
 ;; Discover dock connector names; MST suffixes can change on reconnect.
 (make-workstation-home
+ #:pointer-config "ALPINEWS_NATURAL_SCROLL_USB_ID='1133, 49291'
+"
  #:keyboard-config "ALPINEWS_SWAP_KEYBOARD_USB_ID='8137, 59591'
 "
  #:display-config "ALPINEWS_DISPLAY_POLICY=mirror

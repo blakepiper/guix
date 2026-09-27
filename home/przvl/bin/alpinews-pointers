@@ -1,0 +1,20 @@
+#!/bin/sh
+# Only the host-selected USB pointer gets natural scrolling.
+set -eu
+[ -n "${DISPLAY:-}" ] || exit 0
+config=${XDG_CONFIG_HOME:-$HOME/.config}/alpinews/pointer.conf
+# shellcheck disable=SC1090
+[ ! -r "$config" ] || . "$config"
+[ -n "${ALPINEWS_NATURAL_SCROLL_USB_ID:-}" ] || exit 0
+xinput list --short | sed -n '/slave  pointer/s/.*id=\([0-9]*\).*/\1/p' |
+while IFS= read -r device; do
+    properties=$(xinput list-props "$device" 2>/dev/null) || continue
+    product=$(printf '%s\n' "$properties" |
+        sed -n 's/.*Device Product ID ([0-9]*):[[:space:]]*//p')
+    [ "$product" = "$ALPINEWS_NATURAL_SCROLL_USB_ID" ] || continue
+    # Composite USB devices can expose pointer interfaces without scrolling.
+    case "$properties" in
+        *'libinput Natural Scrolling Enabled ('*)
+            xinput set-prop "$device" 'libinput Natural Scrolling Enabled' 1 ;;
+    esac
+done

@@ -29,6 +29,7 @@ while IFS= read -r line; do
                 # Let Xorg create the slave devices before configuring them.
                 sleep 1
                 alpinews-keyboards || :
+                alpinews-pointers || :
             fi
             action='' hotplug='' subsystem='' ;;
     esac

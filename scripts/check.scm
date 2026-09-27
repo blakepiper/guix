@@ -267,3 +267,15 @@
               (operating-system-host-name os)))))
  (list system zen-system))
 (display "Both hosts use NetworkManager-managed DHCP DNS without a static resolver file.\n")
+
+;; Each host retains boot/event enforcement and reapplies the ceiling during
+;; activation, including reconfigures that leave its one-shot service intact.
+(for-each
+ (lambda (entry)
+   (let ((names (service-names (car entry))) (name (cdr entry)))
+     (unless (and (memq name names)
+                  (memq (symbol-append name '-activation) names))
+       (error "Battery ceiling must be declared at boot and activation" name))))
+ (list (cons system 'thinkpad-charge-limit)
+       (cons zen-system 'zen-charge-limit)))
+(display "Both battery ceilings include persistent service and activation hooks.\n")

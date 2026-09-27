@@ -215,3 +215,12 @@ The built-in keyboard retains its normal Win/Super map. No new sources copied.
 Zen's BAT0 exposes the standard charge_control_end_threshold attribute.
 The existing T490 threshold writer is extracted into a shared battery module;
 Zen selects 79% without importing ThinkPad module-loading behavior.
+
+## Zen mouse and charge-limit persistence, 2026-09-27
+
+Live XInput identified the attached Logitech G502 HERO as USB 046d:c08b.
+A local Home helper enables its libinput natural-scrolling property at login
+and input hotplug, without modifying other pointer devices. The existing
+shared battery service now reapplies its ceiling during system activation as
+well as boot and power-supply events, so reconfiguration cannot skip the
+writer merely because the one-shot service is unchanged. No sources copied.

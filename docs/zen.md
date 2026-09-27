@@ -42,8 +42,12 @@ The attached Gaming Keyboard reports USB ID 1fc9:e8c7. Home applies
 on input hotplug, making its Command key Super. The built-in AT keyboard is
 untouched. No global/core keyboard map is changed.
 
+The Logitech G502 HERO (USB 046d:c08b) uses natural scrolling. Home applies
+this per pointer at login and reconnect, leaving the touchpad unchanged.
+
 Zen exposes `/sys/class/power_supply/BAT0/charge_control_end_threshold`.
-The `zen-charge-limit` service and power-supply udev rule set it to 79% using
+The `zen-charge-limit` service, system activation and power-supply udev rule
+set it to 79% at boot, every reconfigure, and device add/change events using
 the shared threshold writer, without ThinkPad module loading. The system must
 be reconfigured to install this service. A ceiling does not actively discharge
 a battery already above 79%.

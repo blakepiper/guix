@@ -101,6 +101,7 @@ optional xset +dpms
 optional xset dpms 0 0 0
 optional alpinews-monitors
 optional alpinews-keyboards
+optional alpinews-pointers
 optional feh --bg-fill "${XDG_CONFIG_HOME:-$HOME/.config}/wallpaper/night.png"
 
 # This is Guix's privileged-program directory, not an Alpine/Nix path.
