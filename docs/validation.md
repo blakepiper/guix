@@ -1,5 +1,39 @@
 # Validation
 
+## Zen multi-host configuration, 2026-09-27
+
+Validated on the running T490 with the repository's pinned Guix wrapper:
+
+- `./scripts/guix repl -L modules scripts/check.scm` passed: T490 System/Home,
+  Zen Home and storage-free host composition, both service graphs, shared free
+  defaults, explicit firmware sets, shared account/applications/session helpers,
+  distinct Xorg/display choices, and exclusion of ThinkPad services from Zen.
+- `./scripts/guix system build -L modules hosts/t490/system.scm` passed.
+  All three T490 host files are unchanged.
+- Both `./scripts/guix home build -L modules hosts/{t490,zen}/home.scm` invocations
+  passed separately. The wrapper resolved cached stable Firefox 156.0 and latest
+  stable Codex 0.157.1 using the existing signed-cache/runtime packaging flow.
+- Zen's real system build was attempted and rejected with the expected explicit
+  unconfigured-storage error. No real Zen system closure or boot is claimed.
+- The new Intel graphics firmware and pinned Nonguix SOF firmware builds passed.
+  Graphics output contains only `i915/` and `xe/`; Lunar Lake GuC/HuC/GSC and
+  Xe2LPD DMC files are present. SOF output includes signed Lunar Lake IPC4 firmware
+  and topology files. These are package checks, not physical device tests.
+- Six mocked-XRandR checks passed (discovery, internal-only native mode, external
+  preservation, unplug cleanup/fallback, no panel, and T490 behavior). All eight
+  X-session tests passed. One old terminal expectation was corrected to include
+  the font argument already in the unchanged shared OXWM configuration.
+- ShellCheck 0.10.0 passed for the changed monitor helper. The full scan also
+  reported existing informational SC2317 findings in xinitrc's trap cleanup and
+  SC2012 findings in clipboard-history; the full scan passes at warning/error
+  severity. Those unchanged scripts were not edited.
+- Wrapper failure/cleanup tests and `git diff --check` passed.
+
+No system/Home activation, partitioning or reboot occurred. Zen storage,
+networking, graphics, sound, suspend and all other physical behavior remain to
+be verified on the Zenbook; see [the installation checklist](zen.md). Historical
+entries below describe earlier environments and do not supersede these results.
+
 ## Cached Firefox updates, 2026-09-26
 
 Home build/reconfigure now resolves the newest successful stable x86_64

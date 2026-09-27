@@ -121,7 +121,8 @@ exit "$TEST_WM_STATUS"
     def test_terminal_uses_profile_st_and_bash_without_wrapper(self):
         self.script("st", 'printf "%s\\n" "$@" > "$TEST_CONTROL/terminal-args"\n')
         self.launch_terminal()
-        self.assertEqual((self.control / "terminal-args").read_text(), "-e\nbash\n")
+        self.assertEqual((self.control / "terminal-args").read_text(),
+                         "-f\nmonospace:size=14\n-e\nbash\n")
         self.assertFalse((self.home / ".local/bin/st-bash").exists())
 
     def test_terminal_failure_is_logged_and_wm_survives(self):

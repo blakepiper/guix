@@ -19,6 +19,21 @@ if ! connected "$internal"; then
     internal=$(printf '%s\n' "$outputs" | awk '$2=="connected" && $1~/^eDP/ {print $1; exit}')
 fi
 [ -n "$internal" ] || { echo 'No internal panel detected; leaving displays unchanged.' >&2; exit 0; }
+if [ "${ALPINEWS_DISPLAY_POLICY:-mirror}" = native ]; then
+    # Host opt-in: preserve external layouts and never force a mirror mode.
+    for output in $(printf '%s\n' "$outputs" | awk '$2=="disconnected" {print $1}'); do
+        xrandr --output "$output" --off
+    done
+    if [ -n "${ALPINEWS_INTERNAL_MODE:-}" ] && [ -n "${ALPINEWS_INTERNAL_RATE:-}" ]; then
+        if xrandr --output "$internal" --mode "$ALPINEWS_INTERNAL_MODE" \
+            --rate "$ALPINEWS_INTERNAL_RATE" --scale 1x1 --primary; then
+            exit 0
+        fi
+        echo 'Requested panel mode unavailable; using its preferred mode.' >&2
+    fi
+    xrandr --output "$internal" --auto --scale 1x1 --primary
+    exit 0
+fi
 if ! connected "$external"; then
     external=$(printf '%s\n' "$outputs" | awk '$2=="connected" && $1~/^(HDMI|DP)-/ {print $1; exit}')
 fi

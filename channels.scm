@@ -3,7 +3,7 @@
        (inherit (car %default-channels))
        (url "https://codeberg.org/guix/guix.git")
        (commit "fb556d47e9dfbd246d748f3fc6d7cf9edba6c656"))
-      ;; Available to all hosts; only the T490 opts into its kernel/firmware.
+      ;; Available to all hosts; hosts explicitly opt into its kernel/firmware.
       (channel
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")

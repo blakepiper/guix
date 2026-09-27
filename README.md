@@ -1,13 +1,14 @@
 # Guix workstation
 
-GNU-first Guix System and Guix Home configuration, initially for Blake's ThinkPad
-T490. AlpineWS supplies the desktop conventions; Blix supplies the separation of
+Multi-host Guix System and Guix Home configuration for Blake's working ThinkPad
+T490 and ASUS Zenbook S 14 (`zen`), both using the `przvl` account. AlpineWS
+supplies the desktop conventions; Blix supplies the separation of
 shared modules, user configuration, and machine-specific facts.
 
 The desktop uses Xorg, OXWM, **Picom with fully opaque windows**, st, Firefox,
 Xfe, Neovim and PipeWire. Log in on a console and run `startx`. There is no display
-manager, automatic login, or proprietary browser DRM. The T490 has an explicit
-Intel Wi-Fi exception described below.
+manager, automatic login, or proprietary browser DRM. Each host has an explicit
+kernel/firmware exception described below.
 GNU libc, GNU command-line tools, Bash and Shepherd replace Alpine's musl,
 BusyBox and OpenRC. Elogind manages seats, power actions and suspend inhibition.
 
@@ -20,8 +21,9 @@ BusyBox and OpenRC. Elogind manages seats, power actions and suspend inhibition.
 | `modules/workstation/home/` | Shared user applications and Guix Home services |
 | `modules/workstation/packages/` | Package recipes for OXWM, Codex, clipboard listener and editor tooling |
 | `hosts/t490/system.scm` | T490 composition and input hardware settings |
-| `hosts/t490/hardware.scm` | Filesystems and swap, to verify on the actual laptop |
-| `hosts/t490/home.scm` | Host display settings |
+| `hosts/t490/hardware.scm` | Verified installed T490 filesystems and swap |
+| `hosts/t490/home.scm` | T490 display settings |
+| `hosts/zen/` | Zen system composition, guarded storage and native-panel Home policy |
 | `home/przvl/` | Desktop configuration and session helpers |
 | `sources/` | Release pins, patches and copied source inputs |
 | `scripts/` | Pinned Guix invocation, Codex release refresh and checks |
@@ -33,17 +35,22 @@ or add hostname tests to shared modules.
 
 ## Freedom and hardware
 
-Shared defaults select Linux-libre and Guix's free base firmware. The T490 alone
+Shared defaults select Linux-libre and Guix's free base firmware. The T490
 uses Nonguix's standard Linux and adds `iwlwifi-firmware` for its built-in Intel
 wireless adapter, an explicit nonfree exception requested for this host. This
 package contains firmware for multiple Intel Wi-Fi models, not one device blob.
 Adding the channel does not change other hosts' kernel or firmware defaults.
 
-The exception adds no full `linux-firmware` bundle, CPU microcode, Bluetooth
+The T490 exception adds no full `linux-firmware` bundle, CPU microcode, Bluetooth
 firmware or GPU firmware. Bluetooth, video acceleration and other firmware-dependent
 functions still need testing. Picom uses XRender to avoid requiring working
 accelerated OpenGL. See the
 [Nonguix instructions](https://github.com/nonguix/nonguix#installation).
+
+Zen selects Linux, Intel Wi-Fi, Intel i915/Xe graphics and Intel SOF audio
+firmware. It uses Xorg modesetting, with no ThinkPad services or charge limits.
+See [the Zen installation guide](docs/zen.md) for the firmware rationale, storage
+guard, first-boot information to collect, and build/activation commands.
 
 The T490 still has proprietary platform firmware; installing Guix cannot make
 that hardware fully free. Omitting microcode also forgoes OS-delivered CPU fixes.
@@ -138,12 +145,18 @@ Codex releases with the same supported distribution layout.
 ```sh
 ./scripts/guix repl -L modules scripts/check.scm
 ./scripts/check-guix-wrapper.sh
+./scripts/guix shell python shellcheck -- sh -c \
+  'python3 scripts/check-monitors.py && python3 scripts/check-xsession.py && shellcheck home/przvl/bin/alpinews-monitors'
 ./scripts/guix build -L modules -e '(@ (workstation packages oxwm) oxwm-source)'
 ./scripts/guix build -L modules -e '(@ (workstation packages codex) codex)'
 ./scripts/guix system build -L modules hosts/t490/system.scm
 ./scripts/guix home build -L modules hosts/t490/home.scm
 git diff --check
 ```
+
+The Scheme checks cover both hosts and require Zen's storage guard to reject
+its unfinished system entrypoint. Zen Home can be built now; its real system
+build awaits verified storage. See [Zen instructions](docs/zen.md).
 
 Evaluation is not a successful build or a hardware test. See
 [validation notes](docs/validation.md) for what has actually been checked.
@@ -209,11 +222,8 @@ Follow the [Guix installation manual](https://guix.gnu.org/manual/en/html_node/S
 to prepare and mount your intended filesystems at `/mnt` and `/mnt/boot/efi`.
 
 Before initialization, verify `lsblk -f` against `hosts/t490/hardware.scm`.
-The configuration expects an ext4 root labelled `guix-root` and a FAT EFI system
-partition labelled `GUIX_EFI`. These are an explicit installation layout, not
-detected facts. Replace them with verified UUIDs if retaining existing volumes.
-Do not reuse Blix's historical UUIDs blindly. Swap and disk encryption are not
-configured; add verified storage mappings if you want them before installation.
+These are the working T490's actual root, EFI and swap UUIDs. They must never
+be reused on another machine. Zen follows [its own installation guide](docs/zen.md).
 
 With the checkout and source archive available, from its directory:
 
@@ -239,8 +249,8 @@ Finish installing over Ethernet and boot the installed system. Selecting
 Linux-libre in the installer is fine; reconfiguration can change the kernel later.
 Clone or update this repository, then **adapt `hosts/t490/hardware.scm` to the
 actual filesystems, swap and any encrypted-device mappings in the installer's
-generated `/etc/config.scm`**. Verify with `lsblk -f`; the example labels in this
-repository must not replace your actual storage identities. Also check the user
+generated `/etc/config.scm`**. Verify with `lsblk -f`; the recorded T490 UUIDs
+must not replace another installation's storage identities. Also check the user
 account and EFI mount point before applying this configuration.
 
 From the checkout, while still connected by Ethernet:

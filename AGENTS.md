@@ -4,9 +4,11 @@
   `modules/workstation/`. Use `-L modules`, not `-L .`, so Guix's package
   discovery does not evaluate host entrypoints as package modules.
 - Keep Linux-libre and free firmware as the shared defaults. The user authorized
-  a T490-only exception: standard Linux and iwlwifi-firmware from the pinned,
-  authenticated Nonguix channel. Do not expand that exception to other hosts or
-  nonfree packages, or introduce other prebuilt application binaries.
+  explicit host exceptions from the pinned, authenticated Nonguix channel:
+  T490 uses standard Linux and iwlwifi-firmware; Zen uses standard Linux,
+  iwlwifi-firmware, Intel i915/Xe graphics firmware and Intel SOF audio firmware.
+  Keep these choices host-specific; do not add AMD/NVIDIA firmware, expand to
+  other hosts/nonfree packages, or introduce other prebuilt application binaries.
 - Keep OXWM as a pinned source build. Codex is the user-authorized exception:
   Home build/reconfigure resolves the latest official stable Linux x86_64 musl
   release, then builds with its versioned URL and fixed SHA-256. Keep that

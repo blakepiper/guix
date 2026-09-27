@@ -182,3 +182,20 @@ not an initial configuration value. The Home Lua config disables inner and
 outer gaps and keeps a two-pixel border so the focused window is outlined.
 The status bar remains visible; windows tile flush against it and the screen
 edges.
+
+## Zen host, 2026-09-27
+
+Zen composes the working T490's shared workstation modules without copying its
+storage, input IDs or ThinkPad battery services. Hardware specifications come
+from the user; storage and actual device IDs remain unverified. The monitor
+helper gains an opt-in native-panel policy with the existing T490 default kept.
+See [the Zen guide](zen.md) for upstream hardware references and firmware choices.
+
+`modules/workstation/packages/firmware.scm` adapts the WHENCE selection phase
+from the pinned Nonguix `nongnu/packages/linux.scm` (`select-firmware` and
+`i915-firmware`, channel commit `2a16e08d40b913e593c7c9ea29bc82b96f117e24`).
+It inherits the recipe/source checksum and expands the allowed paths to
+`i915/` and `xe/`; no sibling repository is used. This is a firmware subset,
+not a full linux-firmware installation. Zen's explicit host exception adds
+Intel graphics and Intel SOF audio alongside Intel wireless; it does not alter
+T490's earlier exception or shared free defaults.

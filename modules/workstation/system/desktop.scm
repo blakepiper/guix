@@ -10,7 +10,10 @@
   #:use-module (workstation files)
   #:export (desktop-services))
 
-(define* (desktop-services #:key (xorg-extra '()))
+(define* (desktop-services #:key (xorg-extra '())
+                           (xorg-modules (xorg-configuration-modules
+                                          (xorg-configuration)))
+                           (xorg-drivers '()))
   (append
    (list
     (simple-service
@@ -29,6 +32,8 @@
     (service ntp-service-type)
     (service startx-command-service-type
              (xorg-configuration
+              (modules xorg-modules)
+              (drivers xorg-drivers)
               (keyboard-layout (keyboard-layout "us"))
               (extra-config xorg-extra)))
     ;; Our console desktop uses %base-services, not %desktop-services, so it
