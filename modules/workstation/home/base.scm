@@ -24,7 +24,7 @@
      (list oxwm-source codex clipwatch blesh firefox-blix)
      editor-packages
      (specifications->packages
-      '("picom" "st" "gammastep" "dmenu" "xfe" "git" "curl"
+      '("picom" "st" "gammastep" "dmenu" "xfe" "git" "curl" "ncurses"
         "openssh" "fastfetch-minimal"
         "ripgrep" "fd" "gcc-toolchain" "make" "pkg-config"
         "font-dejavu" "font-gnu-freefont" "mpv" "feh" "xdg-utils"
