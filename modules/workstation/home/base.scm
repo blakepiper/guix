@@ -71,6 +71,7 @@
       `(("oxwm/config.lua" ,(repository-file "home/przvl/config/oxwm/config.lua"))
         ("alpinews/display.conf" ,(plain-file "display.conf" display-config))
         ("picom/picom.conf" ,(repository-file "home/przvl/config/picom.conf"))
+        ("wallpaper/night.png" ,(repository-file "home/przvl/config/wallpaper/night.png"))
         ("gammastep/config.ini" ,(repository-file "home/przvl/config/gammastep/config.ini"))
         ("mimeapps.list"
          ,(plain-file "mimeapps.list"

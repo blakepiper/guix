@@ -1,5 +1,13 @@
 # Sources and port decisions
 
+## Wallpaper, 2026-09-26
+
+`home/przvl/config/wallpaper/night.png` is an unchanged copy of the user's
+`~/Downloads/night.png` (SHA-256
+`0940dbb5460c0e3d6d3d6896c24d46056dc0547f56b8b5267df8b76660871eb3`).
+Guix Home installs it under `~/.config/wallpaper/` so X session startup does
+not depend on the Downloads directory.
+
 ## Firefox stable-release verification, 2026-09-26
 
 Home resolution now intersects successful Nonguix Firefox builds with Mozilla's
