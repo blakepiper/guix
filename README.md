@@ -1,3 +1,5 @@
+![Guix logo](docs/images/guix-logo.png)
+
 # Guix workstation
 
 Multi-host Guix System and Guix Home configuration for Blake's working ThinkPad
