@@ -19,6 +19,14 @@ if ! connected "$internal"; then
     internal=$(printf '%s\n' "$outputs" | awk '$2=="connected" && $1~/^eDP/ {print $1; exit}')
 fi
 [ -n "$internal" ] || { echo 'No internal panel detected; leaving displays unchanged.' >&2; exit 0; }
+refresh_wallpaper() {
+    wallpaper=${XDG_CONFIG_HOME:-$HOME/.config}/wallpaper/night.png
+    if [ -r "$wallpaper" ] && command -v feh >/dev/null 2>&1; then
+        # The root pixmap does not resize itself when RandR changes geometry.
+        feh --no-fehbg --bg-fill "$wallpaper" ||
+            echo 'Could not refresh wallpaper after display change.' >&2
+    fi
+}
 restore_panel() {
     # Clear stale outputs and restore the host-specific standalone mode.
     for output in $(printf '%s\n' "$outputs" | awk '$2=="disconnected" {print $1}'); do
@@ -35,6 +43,7 @@ restore_panel() {
 }
 if [ "${ALPINEWS_DISPLAY_POLICY:-mirror}" = native ]; then
     restore_panel
+    refresh_wallpaper
     exit 0
 fi
 if ! connected "$external"; then
@@ -51,3 +60,4 @@ if [ -n "$external" ]; then
 else
     restore_panel
 fi
+refresh_wallpaper

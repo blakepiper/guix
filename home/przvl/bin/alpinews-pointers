@@ -1,5 +1,5 @@
 #!/bin/sh
-# Only the host-selected mouse and touchpad get natural scrolling.
+# Configure only the host-selected mouse and touchpad.
 set -eu
 [ -n "${DISPLAY:-}" ] || exit 0
 config=${XDG_CONFIG_HOME:-$HOME/.config}/alpinews/pointer.conf
@@ -20,4 +20,16 @@ while IFS= read -r device; do
         *'libinput Natural Scrolling Enabled ('*)
             xinput set-prop "$device" 'libinput Natural Scrolling Enabled' 1 ;;
     esac
+    if [ "$product" = "$touchpad" ] &&
+        [ "${ALPINEWS_TOUCHPAD_TWO_FINGER_CLICK:-0}" = 1 ]; then
+        # The composite mouse interface shares the ID but lacks tapping.
+        case "$properties" in
+            *'libinput Tapping Enabled ('*)
+                xinput set-prop "$device" 'libinput Tapping Enabled' 1
+                # One/two/three fingers map to left/right/middle.
+                xinput set-prop "$device" 'libinput Tapping Button Mapping Enabled' 1 0
+                xinput set-prop "$device" 'libinput Click Method Enabled' 0 1
+                xinput set-prop "$device" 'libinput Clickfinger Button Mapping Enabled' 1 0 ;;
+        esac
+    fi
 done

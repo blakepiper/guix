@@ -247,3 +247,21 @@ OXWM Lua configuration. Firefox receives a host-specific policy overlay with
 describes the device-pixel/CSS-pixel scale. All Blix policies and the cached,
 signed Firefox resolution/build path are retained; no new binary source is
 introduced. T490 retains the original bar font and Firefox preferences.
+
+## Zen touchpad right-click, 2026-09-27
+
+Live XInput showed tapping disabled and button-area clicking selected on the
+ASUF1208 touchpad. Zen now opts into tapping and clickfinger with explicit
+left/right/middle mappings for one/two/three fingers. The existing Home input
+helper applies these only to the selected product's tapping-capable interface,
+leaving its composite mouse interface and other devices untouched. Property
+semantics follow the installed xf86-input-libinput 1.5.0 driver and its
+[manual](https://man.archlinux.org/man/libinput.4.en). No sources copied.
+
+## Wallpaper after display changes, 2026-09-27
+
+The AlpineWS-derived monitor helper now reruns feh after successful layout
+changes, including mirror, standalone and preferred-mode fallback paths.
+Previously only session startup painted the wallpaper, leaving an oversized
+root pixmap after reducing resolution or undocking. The original image and
+aspect-preserving fill mode are retained; no image asset was edited.

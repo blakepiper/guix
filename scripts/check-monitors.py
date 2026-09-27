@@ -27,13 +27,25 @@ printf '%s\\n' "$*" >> "$TEST_ROOT/calls"
 case " $* " in *" --mode "*) [ "$TEST_FAIL_MODE" = 0 ] || exit 1;; esac
 ''')
             stub.chmod(0o755)
+            (root / "wallpaper").mkdir()
+            (root / "wallpaper/night.png").touch()
+            feh = root / "feh"
+            feh.write_text("#!/bin/sh\nprintf 'wallpaper\\n' >> \"$TEST_ROOT/calls\"\n")
+            feh.chmod(0o755)
             env = dict(os.environ, XDG_CONFIG_HOME=tmp, DISPLAY=":999",
                        TEST_ROOT=tmp, TEST_FAIL_MODE=str(int(fail_mode)),
                        PATH=tmp + os.pathsep + os.environ["PATH"])
             subprocess.run(["sh", str(HELPER)], env=env, check=True,
                            capture_output=True, text=True)
             calls = root / "calls"
-            return calls.read_text().splitlines() if calls.exists() else []
+            result = calls.read_text().splitlines() if calls.exists() else []
+            if result:
+                # Repaint only after the final RandR command, on mirror and
+                # standalone/fallback paths alike.
+                self.assertEqual(result[-1], "wallpaper")
+                self.assertEqual(result.count("wallpaper"), 1)
+                result.pop()
+            return result
 
     def test_zen_discovers_readable_panel(self):
         self.assertEqual(self.run_policy("zen", "eDP-7 connected\n  1920x1200 59.95*+\n"),

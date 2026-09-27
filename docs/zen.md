@@ -35,7 +35,8 @@ Home discovers the eDP panel and dock display and mirrors both at 1920×1080:
 the internal panel runs at approximately 60 Hz and the external at 120 Hz.
 When undocked, it uses 1920×1200 at approximately 60 Hz for readability
 (50% larger than native), falling back to the preferred mode if needed. The first connected DP/HDMI output is selected automatically.
-On first boot, the connectors were eDP-1 and DP-1-4-4.
+On first boot, the connectors were eDP-1 and DP-1-4-4. After each layout
+change, the monitor helper refits the wallpaper to the new display geometry.
 
 The attached Gaming Keyboard reports USB ID 1fc9:e8c7. Home applies
 `altwin:swap_alt_win` to its physical X keyboard devices at session startup and
@@ -43,7 +44,9 @@ on input hotplug, making its Command key Super. The built-in AT keyboard is
 untouched. No global/core keyboard map is changed.
 
 The Logitech G502 HERO (USB 046d:c08b) and ASUF1208 touchpad (2808:0218)
-use natural scrolling. Home applies this per pointer at login and reconnect.
+use natural scrolling. The touchpad also enables tapping and clickfinger:
+one finger left-clicks, two fingers right-click, and three fingers middle-click,
+for both taps and physical presses. Home reapplies these at login and reconnect.
 
 Zen exposes `/sys/class/power_supply/BAT0/charge_control_end_threshold`.
 The `zen-charge-limit` service, system activation and power-supply udev rule
