@@ -1,5 +1,29 @@
 # Validation
 
+## Blix Firefox policy port, 2026-09-26
+
+The user requested replacing LibreWolf with their existing Blix Firefox setup.
+The imported policy object exactly matches both the evaluated Blix Nix module
+and its installed policies.json. The Home package, BROWSER, MIME associations
+and Super+B binding now use Firefox. Other desktop settings are unchanged.
+
+The `firefox-blix` builder copies the channel package and adds the policies in
+the physical application's `distribution/policies.json`, preserving/repointing
+Guix's existing launcher and desktop entries. Its Firefox dependency can use
+the normal channel build/substitute; policy edits alone do not rebuild Firefox.
+
+Validation used the actual Scheme builder with a Guix-shaped fixture made from
+the development machine's Firefox 156.0. A disposable headless Firefox profile
+reported every Blix policy active through Marionette, including all three
+extension declarations; effective tracking protection was strict and GPC true.
+This validates runtime policy discovery, not a Guix daemon-backed Firefox build
+or completed extension downloads. The extensions use Mozilla Add-ons at browser
+startup, as in Blix. Existing browser profiles were not modified.
+
+Home reconfiguration is sufficient. Start a fresh console/X session to refresh
+the OXWM binding and BROWSER environment; Firefox itself can be launched from
+a new terminal immediately after reconfiguration.
+
 ## Complete automatically resolved Codex runtime, 2026-09-26
 
 The previous recipe selected the CLI-only archive. Help/onboarding worked, but

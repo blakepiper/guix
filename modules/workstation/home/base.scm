@@ -13,6 +13,7 @@
   #:use-module (workstation home editor)
   #:use-module (workstation packages oxwm)
   #:use-module (workstation packages codex)
+  #:use-module (workstation packages browser)
   #:use-module (workstation packages desktop)
   #:export (make-workstation-home))
 
@@ -20,10 +21,10 @@
   (home-environment
    (packages
     (append
-     (list oxwm-source codex clipwatch blesh)
+     (list oxwm-source codex clipwatch blesh firefox-blix)
      editor-packages
      (specifications->packages
-      '("librewolf" "picom" "st" "dmenu" "xfe" "git" "curl"
+      '("picom" "st" "dmenu" "xfe" "git" "curl"
         "openssh" "fastfetch-minimal"
         "ripgrep" "fd" "gcc-toolchain" "make" "pkg-config"
         "font-dejavu" "font-gnu-freefont" "mpv" "feh" "xdg-utils"
@@ -50,7 +51,7 @@
      (service home-pipewire-service-type)
      (simple-service 'workstation-environment home-environment-variables-service-type
                      '(("EDITOR" . "nvim") ("VISUAL" . "nvim")
-                       ("BROWSER" . "librewolf")
+                       ("BROWSER" . "firefox")
                        ("PATH" . "$HOME/.local/bin${PATH:+:}$PATH")))
      (simple-service
       'workstation-files home-files-service-type
@@ -72,4 +73,4 @@
         ("picom/picom.conf" ,(repository-file "home/przvl/config/picom.conf"))
         ("mimeapps.list"
          ,(plain-file "mimeapps.list"
-                      "[Default Applications]\nx-scheme-handler/http=librewolf.desktop\nx-scheme-handler/https=librewolf.desktop\ntext/html=librewolf.desktop\n")))))))))
+                      "[Default Applications]\nx-scheme-handler/http=firefox.desktop\nx-scheme-handler/https=firefox.desktop\ntext/html=firefox.desktop\n")))))))))

@@ -59,7 +59,8 @@ modified. No installer or existing system configuration was activated.
 
 Intentional changes from AlpineWS: GNU userland and libc, Shepherd system
 services, Elogind session/power management, Guix Home PipeWire services, Picom,
-LibreWolf, the official Codex binary, and packaged st. CPU microcode remains omitted.
+the official Codex binary, and packaged st. LibreWolf was subsequently replaced
+by the user's Blix Firefox policies, as described below. CPU microcode remains omitted.
 Intel Wi-Fi firmware was subsequently enabled only for the T490 at the user's
 request. Input permissions are managed through Elogind
 and udev rather than Alpine's broad input-group setup.
@@ -87,6 +88,25 @@ upstream `tree-sitter/tree-sitter` tag `v0.26.1` with SHA-256
 `sources/tree-sitter/Cargo.lock` is copied unchanged from that archive; Guix
 imports the registry dependency sources and hashes from it. This is a source
 build, without an npm-distributed executable or changes to Blix's plugin pins.
+
+## Blix Firefox policies, 2026-09-26
+
+`home/przvl/config/firefox/policies.json` is the JSON translation of
+`home/przvl/programs/browser.nix` from the clean Blix checkout
+`cb7c59f55dd072fae7936ca05b5a3cab088313d4`. Its policy object was compared with
+both the evaluated Nix declaration and the installed Blix Firefox policy file;
+all fields match. The Mozilla Add-ons URLs retain Blix's automatic extension
+updates. No Nix store path or sibling repository is used by the Guix package.
+
+`firefox-blix` copies the pinned Nonguix Firefox package, preserves its Guix
+library wrapper and installs the policy beside the physical Firefox executable.
+It rewrites launcher/desktop references to the new output, avoiding a full
+Firefox source rebuild for a policy change. Mozilla's
+[policy documentation](https://mozilla.github.io/policy-templates/) specifies
+`distribution/policies.json` in the installation directory on Linux. A Home
+dotfile alone is insufficient, and `browser.policies.alternatePath` is restricted
+to automation/Nightly. System configuration and browser profile contents are
+not involved in this packaging change.
 
 ## T490 Wi-Fi exception, 2026-09-26
 

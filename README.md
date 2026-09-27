@@ -4,7 +4,7 @@ GNU-first Guix System and Guix Home configuration, initially for Blake's ThinkPa
 T490. AlpineWS supplies the desktop conventions; Blix supplies the separation of
 shared modules, user configuration, and machine-specific facts.
 
-The desktop uses Xorg, OXWM, **Picom with fully opaque windows**, st, LibreWolf,
+The desktop uses Xorg, OXWM, **Picom with fully opaque windows**, st, Firefox,
 Xfe, Neovim and PipeWire. Log in on a console and run `startx`. There is no display
 manager, automatic login, or proprietary browser DRM. The T490 has an explicit
 Intel Wi-Fi exception described below.
@@ -52,7 +52,14 @@ See the [GNU Guix hardware considerations](https://guix.gnu.org/manual/en/html_n
 Codex's Apache-2.0 CLI is free software. Its hosted model service is a separate
 compromise with [GNU's position on service-based computing](https://www.gnu.org/philosophy/who-does-that-server-really-serve.html).
 No login credentials or hosted provider configuration are included here.
-LibreWolf is installed with its defaults, without imported Firefox policies.
+Firefox uses the privacy policies imported from Blix: strict tracking protection,
+Global Privacy Control, blocked AI features and sponsored content, and managed
+uBlock Origin, Dark Reader and Enhancer for YouTube extensions (including private
+windows). The small policy package reuses Firefox from the pinned Nonguix channel;
+changing policies does not recompile Firefox. Firefox installs/updates the
+extensions from Mozilla Add-ons when it runs, matching Blix's behavior.
+Its existing Firefox profile remains user-managed. Inspect `about:policies`
+to see the active policy set.
 
 ## Application packages
 
@@ -236,7 +243,7 @@ Missing firmware support means this threshold is not guaranteed.
 
 ## Desktop notes
 
-Super+Enter opens st, Super+B opens LibreWolf, Super+F opens Xfe, Super+L locks,
+Super+Enter opens st, Super+B opens Firefox, Super+F opens Xfe, Super+L locks,
 Super+Shift+Space opens the power menu, and Super+Shift+Q exits X. The OXWM
 palette, dwindle layout, nine tags, gaps, screenshots and clipboard history come
 from AlpineWS/Blix. Picom starts and stops with X; it has no transparency,
