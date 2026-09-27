@@ -154,24 +154,21 @@
           (cons* oxwm-source codex (home-environment-packages home)))
 (display "T490 system and Home configuration evaluated.\n")
 
-;; Zen's installable entrypoint must reject unknown disks. The composition is
-;; tested separately with an in-memory, non-installable root, never a fake UUID.
-(primitive-load "hosts/zen/hardware.scm")
-(if (not zen-file-systems)
-    (unless (catch #t
-              (lambda () (primitive-load "hosts/zen/system.scm") #f)
-              (lambda (key . args)
-                (and (eq? key 'misc-error)
-                     (string-contains (format #f "~s" args)
-                                      "Zen storage is unconfigured"))))
-      (error "Zen must refuse evaluation until storage is supplied"))
-    (primitive-load "hosts/zen/system.scm"))
-(primitive-load "hosts/zen/config.scm")
-(define zen-system
-  (make-zen-operating-system
-   (cons (file-system (device "none") (mount-point "/") (type "tmpfs"))
-         %base-file-systems)
-   '() '()))
+;; Evaluate the real installed Zen layout and retain a regression for missing
+;; storage. Restore the verified records even if the guard check fails.
+(define zen-system (primitive-load "hosts/zen/system.scm"))
+(let ((verified-file-systems zen-file-systems))
+  (dynamic-wind
+    (lambda () (set! zen-file-systems #f))
+    (lambda ()
+      (unless (catch #t
+                (lambda () (require-zen-storage!) #f)
+                (lambda (key . args)
+                  (and (eq? key 'misc-error)
+                       (string-contains (format #f "~s" args)
+                                        "Zen storage is unconfigured"))))
+        (error "Zen must refuse missing storage")))
+    (lambda () (set! zen-file-systems verified-file-systems))))
 (define zen-home (primitive-load "hosts/zen/home.scm"))
 (unless (and (string=? (operating-system-host-name zen-system) "zen")
              (eq? (operating-system-kernel zen-system) nongnu:linux)

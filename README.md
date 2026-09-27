@@ -154,9 +154,9 @@ Codex releases with the same supported distribution layout.
 git diff --check
 ```
 
-The Scheme checks cover both hosts and require Zen's storage guard to reject
-its unfinished system entrypoint. Zen Home can be built now; its real system
-build awaits verified storage. See [Zen instructions](docs/zen.md).
+The Scheme checks cover both hosts with their installed storage records and
+verify Zen's missing-storage guard. See [Zen instructions](docs/zen.md) for
+build and activation commands.
 
 Evaluation is not a successful build or a hardware test. See
 [validation notes](docs/validation.md) for what has actually been checked.

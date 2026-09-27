@@ -115,24 +115,30 @@ locking. No ASUS charge policy is assumed. Hardware testing has not occurred.
 
 ## Storage guard and applying the configuration
 
-`hosts/zen/hardware.scm` deliberately has `#f` for all storage lists.
-`hosts/zen/system.scm` refuses evaluation/build/reconfigure with a clear error
-until root, EFI, swap and mapped-device records are supplied. There are no
-placeholder UUIDs, labels, disk paths or environment-variable bypasses.
-`hosts/zen/config.scm` holds the host composition; checks exercise it separately
-with a non-installable in-memory fixture. Passing those checks does not mean
-Zen's real system has been built.
+`hosts/zen/hardware.scm` now records the installed layout shown in the user's
+first-boot photo on 2026-09-27. The installer configuration agrees with `lsblk`,
+`findmnt`, `swapon` and `blkid`:
 
-Send the collected information; the repository can then be updated and pushed
-for you to pull. You do not need to type a large Scheme configuration manually.
-**Only after verified storage records have been committed and pulled**, run:
+| Mount/use | Partition | Type | UUID |
+| --- | --- | --- | --- |
+| `/` | `/dev/nvme0n1p3` | ext4 | `6af180c9-1413-43fe-a3ff-bc31a80220e9` |
+| `/boot/efi` | `/dev/nvme0n1p1` | vfat | `F29A-1C24` |
+| Existing 3.7 GiB swap | `/dev/nvme0n1p2` | swap | `b637087d-0c1a-493f-8ebb-f342576ee654` |
+
+There are no encrypted/LVM mappings. The `/gnu/store` bind mount is managed by
+Guix, not an additional partition. Swap size and behavior are preserved; no
+hibernation configuration is added. These UUIDs belong only to this Zen
+installation. The guard still rejects missing root/EFI or unspecified storage
+lists, and checks now evaluate the real system rather than a storage fixture.
+
+Pull the updated records, build, and then apply on **Zen**:
 
 ```sh
 cd ~/guix
 git pull --ff-only
 ./scripts/guix repl -L modules scripts/check.scm
 ./scripts/guix system build -L modules hosts/zen/system.scm
-# Only after the real storage is validated and that build succeeds:
+# Only after that build succeeds:
 sudo ./scripts/guix system reconfigure -L modules hosts/zen/system.scm
 sudo reboot
 ```

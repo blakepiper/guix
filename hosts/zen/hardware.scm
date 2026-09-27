@@ -1,14 +1,27 @@
 (use-modules (gnu))
 
-;; UNCONFIGURED: copy the complete storage records from Zen's /etc/config.scm
-;; after comparing lsblk -f, findmnt and swapon --show.  See docs/zen.md.
-;; #f is deliberate: never substitute example UUIDs, T490 disks or guessed labels.
-;; Include %base-file-systems in the verified file-system list. Preserve any
-;; mapped devices/encryption dependencies. An empty swap list is valid ONLY
-;; if the installed configuration really has no swap; do not infer it from RAM.
-(define zen-file-systems #f)
-(define zen-swap-devices #f)
-(define zen-mapped-devices #f)
+;; From Zen's installed /etc/config.scm, cross-checked against lsblk -f,
+;; findmnt, swapon and blkid in the user's first-boot photo (2026-09-27).
+;; These are Zen's disks, never defaults for another machine.
+(define zen-file-systems
+  (cons* (file-system
+           (mount-point "/")
+           (device (uuid "6af180c9-1413-43fe-a3ff-bc31a80220e9" 'ext4))
+           (type "ext4"))
+         (file-system
+           (mount-point "/boot/efi")
+           (device (uuid "F29A-1C24" 'fat32))
+           (type "vfat"))
+         %base-file-systems))
+
+;; Preserve the installer's existing 3.7 GiB swap partition, /dev/nvme0n1p2.
+;; No hibernation or resume policy is added.
+(define zen-swap-devices
+  (list (swap-space
+          (target (uuid "b637087d-0c1a-493f-8ebb-f342576ee654")))))
+
+;; The installer uses plain partitions, without encrypted/LVM mappings.
+(define zen-mapped-devices '())
 
 (define (require-zen-storage!)
   (unless (and (list? zen-file-systems)

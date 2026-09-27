@@ -1,5 +1,25 @@
 # Validation
 
+## Zen installed storage, 2026-09-27
+
+The user's first-boot photograph shows the generated `/etc/config.scm`, `lsblk`,
+`findmnt`, `swapon` and `blkid`. The root ext4, EFI vfat and existing 3.7 GiB
+swap UUIDs were transcribed into `hosts/zen/hardware.scm`; no mapped devices,
+swap resizing or hibernation settings were added. See [the storage table](zen.md).
+
+- `./scripts/guix repl -L modules scripts/check.scm` passed using the real Zen
+  system entrypoint/storage records, including both hosts' service graphs and
+  the retained missing-storage guard regression.
+- `./scripts/guix system build -L modules hosts/zen/system.scm` passed, producing
+  `/gnu/store/n2s57n4vqmf255l023n21rps7pj44gnp-system` on the T490.
+- `./scripts/guix home build -L modules hosts/zen/home.scm` passed with the
+  existing Firefox/Codex resolution flow.
+- The complete diff was reviewed and `git diff --check` passed. No shell scripts
+  or package recipes changed, so no additional ShellCheck/package build applies.
+
+This supersedes the earlier missing-storage limitation below. Nothing was
+activated and Zen has not booted this repository's system generation yet.
+
 ## Zen multi-host configuration, 2026-09-27
 
 Validated on the running T490 with the repository's pinned Guix wrapper:
