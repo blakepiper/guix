@@ -224,3 +224,7 @@ and input hotplug, without modifying other pointer devices. The existing
 shared battery service now reapplies its ceiling during system activation as
 well as boot and power-supply events, so reconfiguration cannot skip the
 writer merely because the one-shot service is unchanged. No sources copied.
+
+Zen's ASUF1208 touchpad was subsequently verified as XInput product 2808:0218
+and explicitly enabled for natural scrolling too. The helper matches both
+host-selected product IDs and leaves unrelated pointer devices unchanged.
