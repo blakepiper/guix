@@ -1,5 +1,27 @@
 # Validation
 
+## Home shell tools, 2026-09-26
+
+Home now includes the pinned channel's OpenSSH, fastfetch-minimal 2.66.0 and
+blesh 0.4.0-devel3. OpenSSH supplies `ssh-keygen`; fastfetch-minimal supplies
+`fastfetch` without the full variant's optional graphical/ZFS dependencies.
+Bash sources ble.sh from an immutable store reference after its usual rc
+settings, only for interactive, non-dumb terminals and only once.
+
+- Complete pinned-source System/Home evaluation and package assertions pass.
+- Built the exact upstream ble.sh tag for a disposable pseudo-terminal test:
+  Bash loaded it with autosuggestions enabled, and Right Arrow accepted and
+  executed a history suggestion. Noninteractive and dumb-terminal guards pass.
+  This uses the development machine's Bash, not a Guix daemon-backed build.
+- ShellCheck passes on the extracted Bash fragment with SC1091 excluded for
+  the externally supplied ble.sh library; `git diff --check` passes.
+- Repository-wrapper evaluation, package builds and Home build were attempted
+  but time-machine cannot connect to the absent Guix daemon socket.
+
+Activate with Home reconfiguration and open a new terminal. No system update,
+X session restart, generated SSH key, SSH server or shell-startup download is
+part of this change. The existing aliases and Bash history behavior remain.
+
 ## OXWM terminal launch, 2026-09-26
 
 The repository had a concrete deployment bug: `repository-file` defaults to

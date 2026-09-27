@@ -55,7 +55,8 @@
                             name))
                 (home-environment-packages home))
      (error "Missing X11 session package in Home" name)))
- '("oxwm-source" "st" "xsetroot" "xset" "xrandr" "picom" "xss-lock" "i3lock"
+ '("oxwm-source" "st" "openssh" "fastfetch-minimal" "blesh"
+   "xsetroot" "xset" "xrandr" "picom" "xss-lock" "i3lock"
    "alpinews-clipwatch" "eudev" "elogind"))
 (let* ((files (find (lambda (service)
                       (eq? (service-type-name (service-kind service))

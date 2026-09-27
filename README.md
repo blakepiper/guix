@@ -129,6 +129,15 @@ After a terminal/configuration change, run
 with `Super+Shift+Q`, then run `startx` again. No system reconfigure is needed
 for this terminal fix.
 
+Home also provides `ssh-keygen` and the other OpenSSH tools, plus `fastfetch`
+from Guix's lightweight `fastfetch-minimal` package. Run `fastfetch` whenever
+you want a system summary; it does not run automatically at shell startup.
+Interactive Bash loads Guix's ble.sh for syntax highlighting and inline
+history/completion suggestions. Press Right at the end of the line to accept
+a suggestion. Noninteractive shells and `TERM=dumb` skip ble.sh. After Home
+reconfiguration, open a new terminal to load it. SSH keys remain user-managed;
+this configuration does not generate keys or enable an SSH server.
+
 The system uses Shepherd and standalone elogind, not systemd. `loginctl` is
 elogind's command for locking, suspend and power actions; it is intentional.
 The privileged i3lock installed by Guix lives at `/run/privileged/bin/i3lock`.

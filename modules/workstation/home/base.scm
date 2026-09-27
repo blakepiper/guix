@@ -7,6 +7,7 @@
   #:use-module (gnu home services sound)
   #:use-module (gnu services)
   #:use-module (gnu packages)
+  #:use-module (gnu packages bash)
   #:use-module (guix gexp)
   #:use-module (workstation files)
   #:use-module (workstation home editor)
@@ -19,10 +20,11 @@
   (home-environment
    (packages
     (append
-     (list oxwm-source codex clipwatch)
+     (list oxwm-source codex clipwatch blesh)
      editor-packages
      (specifications->packages
       '("librewolf" "picom" "st" "dmenu" "xfe" "git" "curl"
+        "openssh" "fastfetch-minimal"
         "ripgrep" "fd" "gcc-toolchain" "make" "pkg-config"
         "font-dejavu" "font-gnu-freefont" "mpv" "feh" "xdg-utils"
         "xrandr" "xset" "xsetroot" "xinput" "setxkbmap" "xdotool"
@@ -33,7 +35,17 @@
      (service home-bash-service-type
               ;; Also installs Bash in the Home profile for st -e bash.
               (home-bash-configuration
-               (bashrc (list (plain-file "bashrc" "alias ll='ls -alF'\n")))))
+               (bashrc
+                (list
+                 (mixed-text-file
+                  "workstation-bashrc"
+                  "alias ll='ls -alF'\n"
+                  ;; Load last, after Guix's default Bash configuration. Use a
+                  ;; store reference so activation and shell startup need no
+                  ;; downloads or mutable plugin installation.
+                  "if [[ $- == *i* && ${TERM:-dumb} != dumb && -z ${BLE_VERSION-} ]]; then\n"
+                  "  source " (file-append blesh "/share/blesh/ble.sh") "\n"
+                  "fi\n")))))
      (service home-dbus-service-type)
      (service home-pipewire-service-type)
      (simple-service 'workstation-environment home-environment-variables-service-type
