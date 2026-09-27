@@ -42,7 +42,9 @@
               (invoke "patch" "-p1" "-i"
                       #$(repository-file "sources/oxwm/0001-microphone-keysym.patch"))
               (invoke "patch" "-p1" "-i"
-                      #$(repository-file "sources/oxwm/0002-unique-mirrored-screens.patch"))))
+                      #$(repository-file "sources/oxwm/0002-unique-mirrored-screens.patch"))
+              (invoke "patch" "-p1" "-i"
+                      #$(repository-file "sources/oxwm/0003-equal-split.patch"))))
           (replace 'build
             (lambda _
               (invoke "zig" "build" "-j2" "-Doptimize=ReleaseSmall"

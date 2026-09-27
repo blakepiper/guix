@@ -26,10 +26,11 @@ for i = 1, 9 do
   oxwm.set_tag_layout(i, "dwindle")
 end
 oxwm.set_attach_method("bottom")
-oxwm.gaps.set_enabled(true)
-oxwm.gaps.set_inner(8, 8)
-oxwm.gaps.set_outer(8, 8)
-oxwm.border.set_width(2)
+-- Tile up to the bar and every screen edge without space between windows.
+oxwm.gaps.set_enabled(false)
+oxwm.gaps.set_inner(0, 0)
+oxwm.gaps.set_outer(0, 0)
+oxwm.border.set_width(0)
 oxwm.border.set_focused_color(colors.accent)
 oxwm.border.set_unfocused_color(colors.dim)
 oxwm.bar.set_font("DejaVu Sans Mono:size=10")
