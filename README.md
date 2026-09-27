@@ -120,6 +120,15 @@ OXWM exits. Session output goes to `~/.local/state/oxwm/session.log` (or under
 `$XDG_STATE_HOME`), with one previous session retained. There is no dependency
 on `~/.xsession-errors` or a display manager.
 
+`Super+Enter` runs `st -e bash` directly through OXWM's logged command launcher.
+Home supplies st and interactive Bash; no terminal wrapper is needed. Launch
+commands and their inherited stderr go to the session log. Home imports the
+desktop helper scripts with executable permissions preserved in the store.
+After a terminal/configuration change, run
+`./scripts/guix home reconfigure -L modules hosts/t490/home.scm`, exit OXWM
+with `Super+Shift+Q`, then run `startx` again. No system reconfigure is needed
+for this terminal fix.
+
 The system uses Shepherd and standalone elogind, not systemd. `loginctl` is
 elogind's command for locking, suspend and power actions; it is intentional.
 The privileged i3lock installed by Guix lives at `/run/privileged/bin/i3lock`.

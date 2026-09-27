@@ -55,7 +55,7 @@
                             name))
                 (home-environment-packages home))
      (error "Missing X11 session package in Home" name)))
- '("oxwm-source" "xsetroot" "xset" "xrandr" "picom" "xss-lock" "i3lock"
+ '("oxwm-source" "st" "xsetroot" "xset" "xrandr" "picom" "xss-lock" "i3lock"
    "alpinews-clipwatch" "eudev" "elogind"))
 (let* ((files (find (lambda (service)
                       (eq? (service-type-name (service-kind service))
@@ -64,9 +64,31 @@
        (entry (and files (assoc ".xinitrc" (service-value files))))
        (source (and entry (cadr entry))))
   (unless (and source (local-file? source)
+               (local-file-recursive? source)
                (string-suffix? "/home/przvl/xinitrc" (local-file-file source))
                (not (zero? (logand #o111 (stat:perms (stat (local-file-file source)))))))
-    (error "Home must deploy the executable repository xinitrc")))
+    (error "Home must deploy the executable repository xinitrc"))
+  (when (assoc ".local/bin/st-bash" (service-value files))
+    (error "The terminal must not depend on the obsolete st-bash wrapper"))
+  (for-each
+   (lambda (entry)
+     (when (string-prefix? ".local/bin/" (car entry))
+       (let ((source (cadr entry)))
+         (unless (and (local-file? source) (local-file-recursive? source)
+                      (not (zero? (logand #o111
+                                         (stat:perms (stat (local-file-file source)))))))
+           (error "Home helpers must retain executable mode in the store" (car entry))))))
+   (service-value files)))
+;; Bash comes from home-bash-service-type's profile extension, not the explicit
+;; home-environment packages. Check the resulting profile, including extensions.
+(let ((profile (service-value
+                (fold-services (home-environment-services home)
+                               #:target-type home-profile-service-type))))
+  (unless (any (lambda (entry)
+                 (string=? (package-name (if (pair? entry) (car entry) entry))
+                           "bash"))
+               profile)
+    (error "The terminal requires interactive Bash in the Home profile")))
 (unless (and (eq? (operating-system-kernel system) nongnu:linux)
              (equal? (operating-system-firmware system)
                      (cons nongnu:iwlwifi-firmware %base-firmware)))

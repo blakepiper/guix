@@ -1,5 +1,15 @@
 # Sources and port decisions
 
+## Guix terminal launch, 2026-09-26
+
+The inherited `st-bash` wrapper is removed. OXWM's Return binding now launches
+`st -e bash` with `oxwm.spawn`, which accepts arguments and logs the command.
+The pinned OXWM 0.13.0 `src/wm/actions.zig` terminal-specific action instead
+executes one filename through PATH and silently exits on exec failure.
+Guix's pinned `guix/gexp.scm` documents that flat `local-file` imports discard
+executable permissions; the desktop helpers and `.xinitrc` now use recursive
+imports to preserve them. Bash is supplied by `home-bash-service-type`.
+
 Read-only local references inspected on 2026-09-26:
 
 - AlpineWS `c5805aa0f17a160b72bb9d97c45f988728e230cc`:

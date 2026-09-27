@@ -15,7 +15,6 @@ local colors = {
   orange = "#e0af68",
   green = "#9ece6a",
 }
-oxwm.set_terminal("st-bash")
 oxwm.set_modkey(mod)
 oxwm.set_tags({ "1", "2", "3", "4", "5", "6", "7", "8", "9" })
 -- Dwindle gives new windows recursive Fibonacci-style splits instead of the
@@ -154,5 +153,7 @@ oxwm.key.bind({}, "XF86MonBrightnessUp", oxwm.spawn("alpinews-brightness up"))
 oxwm.key.bind({}, "XF86MonBrightnessDown", oxwm.spawn("alpinews-brightness down"))
 
 -- Core terminal/window bindings.
-oxwm.key.bind({ mod }, "Return", oxwm.spawn_terminal())
+-- spawn_terminal() accepts only an executable name and hides exec failures.
+-- The command path supports arguments and logs startup errors to session.log.
+oxwm.key.bind({ mod }, "Return", oxwm.spawn("exec st -e bash"))
 oxwm.key.bind({ mod }, "Q", oxwm.client.kill())

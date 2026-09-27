@@ -1,5 +1,60 @@
 # Validation
 
+## OXWM terminal launch, 2026-09-26
+
+The repository had a concrete deployment bug: `repository-file` defaults to
+`#:recursive? #f`, as does `local-file`. The pinned Guix `guix/gexp.scm`
+documentation and `nix/libstore/local-store.cc` import implementation show that
+flat imports create non-executable files (0444 after store normalization).
+The Git executable bit alone does not survive this import. Consequently,
+`st-bash` can exist on the X session's PATH but cannot be executed. Pinned
+OXWM 0.13.0 uses `execvp` for `spawn_terminal()` and exits silently on failure.
+LibreWolf comes from a package profile with executable permissions intact.
+
+The wrapper's `/bin/sh` shebang was valid on Guix System; it did not hardcode
+`/bin/bash`. The session already explicitly includes `.local/bin` and the
+Home/system profiles. Home installs st, and its Bash service adds interactive
+Bash to the profile. The fix removes the unnecessary wrapper and uses
+`oxwm.spawn("exec st -e bash")`. OXWM logs this command, and shell/st stderr
+inherits the existing session log. Bash gets an interactive terminal normally,
+without a login-shell override or changes to the user's shell configuration.
+
+The remaining desktop helpers had the same flat-import bug, including commands
+used by screenshot, clipboard, lock, control-menu and brightness bindings.
+Their Home imports, and `.xinitrc`, now preserve executable permissions with
+`#:recursive? #t`. Their contents and bindings are unchanged. Other spawn
+commands resolve to declared packages; no Alpine/Nix executable path was found.
+
+Validation:
+
+- Reproduced the silent failure with the actual patched OXWM 0.13.0 under a
+  disposable Xvfb server: the old binding and a mode-0444 wrapper on PATH opened
+  no terminal. An executable copy of the same wrapper worked.
+- The new binding, with no wrapper, opened real st and interactive Bash via
+  simulated Super+Return. Verified a test Bash rc file, an alias invoked by
+  typed input, terminal exit and continued OXWM operation. The development
+  machine's st/Bash were used, with an isolated rc-file adapter to avoid
+  reading the real user's configuration. This is not a Guix package build.
+- Eight `scripts/check-xsession.py` tests pass, including command arguments,
+  launching without a wrapper, and terminal failure reaching the session log
+  while OXWM remains running. Real OXWM accepts the updated Lua config.
+- `scripts/check.scm` checks st, the Bash service's resulting profile, removal
+  of the wrapper, and both source executability and recursive import for every
+  desktop helper. It also checks `.xinitrc` import mode; the earlier check only
+  inspected permissions in the checkout and missed the store-import bug.
+  The complete checks pass using the local exact pinned Guix/Nonguix source
+  evaluator, including both T490 System and Home service graphs and the sixteen
+  existing Codex metadata tests. This evaluation does not require a daemon.
+- ShellCheck passes for `.xinitrc` and reports no warning/error-severity issues
+  in the helpers. Its existing SC2012 informational notices in clipboard-history
+  remain unchanged. `git diff --check` passes.
+- The normal repository check and st/Bash/OXWM, System and Home builds cannot
+  get through time-machine on this machine: `/var/guix/daemon-socket/socket`
+  is absent. No daemon-backed build or T490 activation is claimed.
+
+Only Home reconfiguration is required. Exit the existing OXWM session with
+Super+Shift+Q and run `startx` to load the changed binding.
+
 ## Console X11 session startup, 2026-09-26
 
 The user reports the T490 System and Home are activated, OXWM and its managed

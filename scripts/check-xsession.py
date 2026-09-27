@@ -2,6 +2,7 @@
 """Exercise the real session script in disposable homes; never start real X."""
 import os
 from pathlib import Path
+import re
 import shutil
 import shlex
 import signal
@@ -102,6 +103,31 @@ exit "$TEST_WM_STATUS"
         self.assertIn("failed (status 23); continuing", self.logs())
         self.assertIn("simulated helper failure", self.logs())
         self.assertIn(str(self.profile / "oxwm"), self.logs())
+        self.assertIn("OXWM exited (status 0)", self.logs())
+
+    def launch_terminal(self):
+        config = (ROOT / "home/przvl/config/oxwm/config.lua").read_text()
+        binding = re.search(r'oxwm\.key\.bind\(\{ mod \}, "Return", '
+                            r'oxwm\.spawn\("([^"\n]+)"\)\)', config)
+        self.assertIsNotNone(binding, "Return must use OXWM's logged command path")
+        # Exercise the configured command with the real session PATH and output
+        # redirection, without touching the user's X server or launching a WM.
+        wm = self.profile / "oxwm"
+        wm.write_text(wm.read_text().replace(
+            'trap ', '/bin/sh -c ' + shlex.quote(binding.group(1)) + '\ntrap ', 1))
+        self.start()
+        self.finish()
+
+    def test_terminal_uses_profile_st_and_bash_without_wrapper(self):
+        self.script("st", 'printf "%s\\n" "$@" > "$TEST_CONTROL/terminal-args"\n')
+        self.launch_terminal()
+        self.assertEqual((self.control / "terminal-args").read_text(), "-e\nbash\n")
+        self.assertFalse((self.home / ".local/bin/st-bash").exists())
+
+    def test_terminal_failure_is_logged_and_wm_survives(self):
+        self.script("st", 'echo "terminal startup failed" >&2\nexit 127\n')
+        self.launch_terminal()
+        self.assertIn("terminal startup failed", self.logs())
         self.assertIn("OXWM exited (status 0)", self.logs())
 
     def test_wm_failure_status_and_cleanup(self):

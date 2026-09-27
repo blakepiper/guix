@@ -31,6 +31,7 @@
    (services
     (append editor-services (list
      (service home-bash-service-type
+              ;; Also installs Bash in the Home profile for st -e bash.
               (home-bash-configuration
                (bashrc (list (plain-file "bashrc" "alias ll='ls -alF'\n")))))
      (service home-dbus-service-type)
@@ -42,11 +43,14 @@
      (simple-service
       'workstation-files home-files-service-type
       (cons
-       `(".xinitrc" ,(repository-file "home/przvl/xinitrc"))
+       `(".xinitrc" ,(repository-file "home/przvl/xinitrc" #:recursive? #t))
        (map (lambda (name)
               (list (string-append ".local/bin/" name)
-                    (repository-file (string-append "home/przvl/bin/" name))))
-            '("st-bash" "workstation-lock" "control-menu" "alpinews-monitors"
+                    ;; Recursive import preserves executability even for a
+                    ;; single file; flat local-file imports become mode 0444.
+                    (repository-file (string-append "home/przvl/bin/" name)
+                                     #:recursive? #t)))
+            '("workstation-lock" "control-menu" "alpinews-monitors"
               "alpinews-hotplug" "alpinews-brightness" "oxwm-cpu" "oxwm-battery"
               "screenshot-region" "clipboard-history"))))
      (simple-service
