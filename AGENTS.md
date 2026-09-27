@@ -19,8 +19,10 @@
   checked-in Firefox record is for offline evaluation only. Use scripts/guix.
 - Picom must keep all windows opaque. Do not add transparency, fading or
   shadows without an explicit request.
-- Preserve unrelated changes. Do not partition disks, activate the system,
-  reboot, commit or push merely because configuration files changed.
+- Preserve unrelated changes. Do not partition disks, activate the system, or
+  reboot merely because configuration files changed. When requested work is
+  complete, the relevant checks pass, and the change is ready, commit and push
+  only the task-related changes. Leave unrelated working-tree changes untouched.
 - Run `./scripts/guix repl -L modules scripts/check.scm`, the relevant package,
   system and Home builds, ShellCheck for changed scripts, and `git diff --check`.
   Report unavailable checks accurately; evaluation is not a build or boot test.

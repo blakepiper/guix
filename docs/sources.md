@@ -171,5 +171,6 @@ monitors and per-tag state. `sources/oxwm/0003-equal-split.patch` changes both
 defaults to 0.50, so the first two dwindle windows divide the working width
 equally on every tag. OXWM's Lua `set_master_factor` produces a key action,
 not an initial configuration value. The Home Lua config disables inner and
-outer gaps and sets the border width to zero. The status bar remains visible;
-windows tile flush against it and the screen edges.
+outer gaps and keeps a two-pixel border so the focused window is outlined.
+The status bar remains visible; windows tile flush against it and the screen
+edges.
