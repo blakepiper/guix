@@ -37,6 +37,14 @@ Section \"InputClass\"
   Option \"NaturalScrolling\" \"true\"
 EndSection
 Section \"InputClass\"
+  Identifier \"T490 built-in keyboard\"
+  MatchIsKeyboard \"on\"
+  MatchProduct \"AT Translated Set 2 keyboard\"
+  Option \"XkbLayout\" \"us\"
+  # Explicitly clear inherited options from the external keyboard.
+  Option \"XkbOptions\" \"\"
+EndSection
+Section \"InputClass\"
   Identifier \"External Gaming Keyboard\"
   MatchIsKeyboard \"on\"
   MatchProduct \"Gaming Keyboard\"

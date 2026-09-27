@@ -472,3 +472,14 @@ Before installation, verify the actual storage identities in
 - `git diff --check` passed. No scripts or application recipes changed; no
   system was activated. Physical Wi-Fi, boot and suspend testing remain pending
   on the T490 after reconfiguration and reboot.
+# T490 built-in keyboard, 2026-09-26
+
+The built-in `AT Translated Set 2 keyboard` inherited the external keyboard's
+Alt/Super swap in the running X session. Its host-specific InputClass now sets
+the US layout and explicitly empty XkbOptions; the external USB keyboard keeps
+its product/USB-ID-scoped `altwin:swap_alt_win` option.
+
+Applied `setxkbmap` to the built-in device only and inspected its actual XKB map
+with `xkbcomp`: LALT/RALT map to Alt_L/Alt_R and LWIN/RWIN to Super_L/Super_R.
+The external keyboard was disconnected, so simultaneous-device behavior and
+a fresh X session still need hardware verification after system reconfigure.
