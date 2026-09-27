@@ -1,5 +1,7 @@
 (define-module (workstation packages browser)
   #:use-module (guix packages)
+  #:use-module (guix gexp)
+  #:use-module (json)
   #:use-module (guix build-system trivial)
   #:use-module ((nongnu packages mozilla) #:prefix mozilla:)
   #:use-module (workstation firefox-release)
@@ -57,3 +59,27 @@
 Blix enterprise policies: strict tracking protection, Global Privacy Control,
 blocked AI features and sponsored content, plus managed privacy extensions.
 The policy layer reuses the existing Firefox package without recompiling it.")))
+
+;; Layer host display preferences over the unchanged Blix policy object.
+(define-public (firefox-blix-with-scale scale)
+  (unless (and (string? scale) (string->number scale)
+               (<= 1 (string->number scale) 3))
+    (error "Invalid Firefox display scale" scale))
+  (let* ((document (call-with-input-file
+                      (local-file-file
+                       (repository-file "home/przvl/config/firefox/policies.json"))
+                    json->scm))
+         (policies (assoc-ref document "policies"))
+         (preferences (assoc "Preferences" policies)))
+    (set-cdr! preferences
+              (cons `("layout.css.devPixelsPerPx" .
+                       (("Value" . ,scale) ("Status" . "locked")))
+                    (cdr preferences)))
+    (package
+      (inherit firefox-blix)
+      (inputs
+       (map (lambda (input)
+              (if (string=? (car input) "policies")
+                  (list "policies" (plain-file "policies.json" (scm->json-string document)))
+                  input))
+            (package-inputs firefox-blix))))))

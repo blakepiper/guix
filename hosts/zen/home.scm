@@ -2,6 +2,8 @@
 
 ;; Discover dock connector names; MST suffixes can change on reconnect.
 (make-workstation-home
+ #:bar-font "DejaVu Sans Mono:size=14"
+ #:firefox-scale "1.25"
  #:pointer-config "ALPINEWS_NATURAL_SCROLL_USB_ID='1133, 49291'
 ALPINEWS_NATURAL_SCROLL_TOUCHPAD_ID='10248, 536'
 "

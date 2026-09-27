@@ -52,6 +52,12 @@ the shared threshold writer, without ThinkPad module loading. The system must
 be reconfigured to install this service. A ceiling does not actively discharge
 a battery already above 79%.
 
+Zen uses a 14-point OXWM bar font and 125% Firefox interface/content scaling
+on top of these display modes. Home supplies the bar font separately from the
+shared Lua configuration and overlays the Firefox preference on the unchanged
+Blix policies. Firefox reads the policy at startup; the bar font is read when
+OXWM starts. These size overrides do not change T490.
+
 ## Kernel and firmware
 
 The channel revisions and authenticated introductions stay pinned. Shared

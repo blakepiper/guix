@@ -33,7 +33,14 @@ oxwm.gaps.set_outer(0, 0)
 oxwm.border.set_width(2)
 oxwm.border.set_focused_color(colors.accent)
 oxwm.border.set_unfocused_color(colors.dim)
-oxwm.bar.set_font("DejaVu Sans Mono:size=10")
+local bar_font = "DejaVu Sans Mono:size=10"
+local config_home = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
+local font_file = io.open(config_home .. "/oxwm/bar-font", "r")
+if font_file then
+  bar_font = font_file:read("*l") or bar_font
+  font_file:close()
+end
+oxwm.bar.set_font(bar_font)
 oxwm.bar.set_scheme_normal(colors.fg, colors.bg, colors.dim)
 oxwm.bar.set_scheme_occupied(colors.workspace_occupied, colors.bg, colors.dim)
 oxwm.bar.set_scheme_selected(colors.accent, colors.bg, colors.workspace_highlight)

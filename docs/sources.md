@@ -237,3 +237,13 @@ After first-boot use, the native panel desktop was too small. Zen now selects
 by the live panel and the earlier dock display query. This enlarges the entire
 existing desktop without per-application overrides; it trades native pixel
 resolution and the standalone 120 Hz mode for readability. T490 is unchanged.
+
+## Zen bar and Firefox readability, 2026-09-27
+
+Zen selects a 14-point bar font through a Home-managed file read by the shared
+OXWM Lua configuration. Firefox receives a host-specific policy overlay with
+`layout.css.devPixelsPerPx` set to "1.25". Mozilla's preference definition in
+[StaticPrefList.yaml](https://github.com/mozilla-firefox/firefox/blob/main/modules/libpref/init/StaticPrefList.yaml)
+describes the device-pixel/CSS-pixel scale. All Blix policies and the cached,
+signed Firefox resolution/build path are retained; no new binary source is
+introduced. T490 retains the original bar font and Firefox preferences.
