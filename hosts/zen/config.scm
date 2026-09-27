@@ -3,7 +3,8 @@
              ((nongnu packages linux) #:prefix nongnu:)
              (workstation packages firmware)
              (workstation system base)
-             (workstation system desktop))
+             (workstation system desktop)
+             (workstation system battery))
 
 ;; Keep composition evaluable without inventing an installable storage layout.
 ;; system.scm is the guarded entrypoint for builds/reconfiguration.
@@ -21,5 +22,6 @@
     (swap-devices swap-devices)
     (mapped-devices mapped-devices)
     ;; Modesetting is built into Xorg. No legacy Intel DDX or device IDs.
-    (services (desktop-services #:xorg-modules (list xf86-input-libinput)
-                                #:xorg-drivers '("modesetting")))))
+    (services (append (battery-charge-services 79 'zen-charge-limit)
+                      (desktop-services #:xorg-modules (list xf86-input-libinput)
+                                #:xorg-drivers '("modesetting"))))))

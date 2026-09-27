@@ -24,7 +24,7 @@ log "PATH=$PATH"
 pids=''
 runtime=''
 fallback_runtime=''
-# shellcheck disable=SC2329 # Invoked by the EXIT trap.
+# shellcheck disable=SC2329,SC2317 # Invoked by the EXIT trap.
 cleanup() {
     status=$?
     trap - EXIT HUP INT TERM
@@ -100,6 +100,7 @@ optional xset s off
 optional xset +dpms
 optional xset dpms 0 0 0
 optional alpinews-monitors
+optional alpinews-keyboards
 optional feh --bg-fill "${XDG_CONFIG_HOME:-$HOME/.config}/wallpaper/night.png"
 
 # This is Guix's privileged-program directory, not an Alpine/Nix path.

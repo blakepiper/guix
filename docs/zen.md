@@ -20,7 +20,8 @@ updates retain the existing Firefox cache-only and Codex release resolution.
 
 T490 keeps its storage, Intel Wi-Fi-only firmware addition, 79% ThinkPad charge
 ceiling, device-specific input configuration, and 1080p/60 external mirroring.
-Zen adds no ThinkPad services, module loading, battery thresholds or input IDs.
+Zen adds a 79% battery charge ceiling and a USB-ID-specific external keyboard
+swap; it loads no ThinkPad modules or services.
 The shared desktop constructor accepts Xorg modules/drivers as parameters;
 its defaults retain the T490 configuration. No hostname branches are used.
 
@@ -30,13 +31,22 @@ describes its KMS/glamor support. No legacy Intel DDX, force-probe kernel
 arguments, custom modelines or global DPI overrides are added. Picom's existing
 XRender configuration, including its current vsync setting, is preserved.
 
-Home discovers a connected eDP panel without assuming a connector number,
-requests 2880×1800 at 120 Hz, and falls back to the panel's preferred mode if
-that request fails. Disconnected outputs are disabled. Connected external
-outputs are left alone; automatic mirroring is disabled for Zen. This supports
-internal-only startup without imposing T490's resolution. External layout,
-refresh rate and any desired scaling will be configured after real `xrandr`
-output is available.
+Home discovers the eDP panel and dock display and mirrors both at 2560×1440:
+the internal panel runs at approximately 60 Hz and the external at 144 Hz.
+When undocked, it restores 2880×1800 at 120 Hz, falling back to the preferred
+mode if needed. The first connected DP/HDMI output is selected automatically.
+On first boot, the connectors were eDP-1 and DP-1-4-4.
+
+The attached Gaming Keyboard reports USB ID 1fc9:e8c7. Home applies
+`altwin:swap_alt_win` to its physical X keyboard devices at session startup and
+on input hotplug, making its Command key Super. The built-in AT keyboard is
+untouched. No global/core keyboard map is changed.
+
+Zen exposes `/sys/class/power_supply/BAT0/charge_control_end_threshold`.
+The `zen-charge-limit` service and power-supply udev rule set it to 79% using
+the shared threshold writer, without ThinkPad module loading. The system must
+be reconfigured to install this service. A ceiling does not actively discharge
+a battery already above 79%.
 
 ## Kernel and firmware
 

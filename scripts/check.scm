@@ -234,7 +234,7 @@
    (cadr (assoc "alpinews/display.conf"
                 (service-value (home-service home 'workstation-config))))))
 (unless (and (string-contains (display-config home) "ALPINEWS_MIRROR_MODE=1920x1080")
-             (string-contains (display-config zen-home) "ALPINEWS_DISPLAY_POLICY=native")
+             (string-contains (display-config zen-home) "ALPINEWS_DISPLAY_POLICY=mirror")
              (string-contains (display-config zen-home) "ALPINEWS_INTERNAL_MODE=2880x1800")
              (string-contains (display-config zen-home) "ALPINEWS_INTERNAL_RATE=120"))
   (error "Host display policies must remain distinct"))

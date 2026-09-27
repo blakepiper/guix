@@ -39,11 +39,9 @@ case " $* " in *" --mode "*) [ "$TEST_FAIL_MODE" = 0 ] || exit 1;; esac
         self.assertEqual(self.run_policy("zen", "eDP-7 connected\n  2880x1800 120.00*+\n"),
                          ["--output eDP-7 --mode 2880x1800 --rate 120 --scale 1x1 --primary"])
 
-    def test_zen_external_is_not_mirrored(self):
-        calls = self.run_policy("zen", "eDP-2 connected\nDP-4 connected\n  2560x1440 144.00\n")
-        self.assertEqual(len(calls), 1)
-        self.assertNotIn("DP-4", calls[0])
-        self.assertNotIn("--same-as", calls[0])
+    def test_zen_mirrors_dock_at_common_resolution(self):
+        calls = self.run_policy("zen", "eDP-2 connected\n  2560x1440 59.99\nDP-1-4-4 connected\n  2560x1440 144.00\n")
+        self.assertEqual(calls, ["--output eDP-2 --mode 2560x1440 --rate 60 --scale 1x1 --primary --output DP-1-4-4 --mode 2560x1440 --rate 144 --scale 1x1 --same-as eDP-2"])
 
     def test_zen_falls_back_to_preferred_mode(self):
         calls = self.run_policy("zen", "eDP-9 connected\nHDMI-3 disconnected\n", True)

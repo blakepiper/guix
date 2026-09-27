@@ -13,17 +13,23 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 0' INT TERM HUP
 mkfifo "$work/events"
-udevadm monitor --udev --property --subsystem-match=drm > "$work/events" & pid=$!
-action='' hotplug=''
+udevadm monitor --udev --property --subsystem-match=drm --subsystem-match=input > "$work/events" & pid=$!
+action='' hotplug='' subsystem=''
 while IFS= read -r line; do
     case "$line" in
         ACTION=*) action=${line#ACTION=} ;;
+        SUBSYSTEM=*) subsystem=${line#SUBSYSTEM=} ;;
         HOTPLUG=*) hotplug=${line#HOTPLUG=} ;;
         '')
             if [ "$action" = change ] && [ "$hotplug" = 1 ]; then
                 sleep 0.2
                 alpinews-monitors || :
             fi
-            action='' hotplug='' ;;
+            if [ "$subsystem" = input ] && [ "$action" = add ]; then
+                # Let Xorg create the slave devices before configuring them.
+                sleep 1
+                alpinews-keyboards || :
+            fi
+            action='' hotplug='' subsystem='' ;;
     esac
 done < "$work/events"

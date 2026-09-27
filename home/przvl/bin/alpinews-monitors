@@ -19,19 +19,22 @@ if ! connected "$internal"; then
     internal=$(printf '%s\n' "$outputs" | awk '$2=="connected" && $1~/^eDP/ {print $1; exit}')
 fi
 [ -n "$internal" ] || { echo 'No internal panel detected; leaving displays unchanged.' >&2; exit 0; }
-if [ "${ALPINEWS_DISPLAY_POLICY:-mirror}" = native ]; then
-    # Host opt-in: preserve external layouts and never force a mirror mode.
+restore_panel() {
+    # Clear stale outputs and restore the host-specific standalone mode.
     for output in $(printf '%s\n' "$outputs" | awk '$2=="disconnected" {print $1}'); do
         xrandr --output "$output" --off
     done
     if [ -n "${ALPINEWS_INTERNAL_MODE:-}" ] && [ -n "${ALPINEWS_INTERNAL_RATE:-}" ]; then
         if xrandr --output "$internal" --mode "$ALPINEWS_INTERNAL_MODE" \
             --rate "$ALPINEWS_INTERNAL_RATE" --scale 1x1 --primary; then
-            exit 0
+            return 0
         fi
         echo 'Requested panel mode unavailable; using its preferred mode.' >&2
     fi
     xrandr --output "$internal" --auto --scale 1x1 --primary
+}
+if [ "${ALPINEWS_DISPLAY_POLICY:-mirror}" = native ]; then
+    restore_panel
     exit 0
 fi
 if ! connected "$external"; then
@@ -40,15 +43,11 @@ fi
 if [ -n "$external" ]; then
     if has_mode "$internal" && has_mode "$external"; then
         xrandr --output "$internal" --mode "$mode" --rate "$rate" --scale 1x1 --primary \
-            --output "$external" --mode "$mode" --rate "$rate" --scale 1x1 --same-as "$internal"
+            --output "$external" --mode "$mode" --rate "${ALPINEWS_EXTERNAL_RATE:-$rate}" --scale 1x1 --same-as "$internal"
     else
         echo "Both panels must support $mode to mirror; leaving external layout unchanged." >&2
         xrandr --output "$internal" --auto --scale 1x1 --primary
     fi
 else
-    # Remove stale CRTCs after unplugging, then restore the panel's native mode.
-    for output in $(printf '%s\n' "$outputs" | awk '$2=="disconnected" {print $1}'); do
-        xrandr --output "$output" --off
-    done
-    xrandr --output "$internal" --auto --scale 1x1 --primary
+    restore_panel
 fi

@@ -199,3 +199,19 @@ It inherits the recipe/source checksum and expands the allowed paths to
 not a full linux-firmware installation. Zen's explicit host exception adds
 Intel graphics and Intel SOF audio alongside Intel wireless; it does not alter
 T490's earlier exception or shared free defaults.
+
+## Zen first-boot peripherals and charge ceiling, 2026-09-27
+
+Live xrandr confirmed eDP-1 (2880×1800 at 120 Hz, 2560×1440 at 59.99 Hz)
+and DP-1-4-4 (2560×1440 at 144 Hz). The local AlpineWS-derived monitor helper
+now accepts a separate external refresh rate and restores the native panel
+mode after unplugging. Zen opts into 1440p mirroring.
+
+Live XInput confirmed the attached Gaming Keyboard's 1fc9:e8c7 USB ID.
+A repository-local helper applies the existing T490 Alt/Super option to only
+that device's slave keyboards, through Home startup and input hotplug.
+The built-in keyboard retains its normal Win/Super map. No new sources copied.
+
+Zen's BAT0 exposes the standard charge_control_end_threshold attribute.
+The existing T490 threshold writer is extracted into a shared battery module;
+Zen selects 79% without importing ThinkPad module-loading behavior.
