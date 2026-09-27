@@ -143,6 +143,94 @@ Codex releases with the same supported distribution layout.
 NetworkManager manages DHCP/connection DNS and writes `/etc/resolv.conf`
 directly on both hosts. See [resolver ownership and applying DNS fixes](docs/networking.md).
 
+## Updating the workstation
+
+Guix can rebuild the whole declared OS, including its kernel, services and
+system packages, and switch to a new generation while retaining older ones.
+`system reconfigure` builds and activates in one command; `system build` only
+builds. Guix Home manages this repository's user applications separately, so
+updating the complete workstation requires both system and Home reconfiguration.
+See the [Guix system manual](https://guix.gnu.org/manual/en/html_node/Invoking-guix-system.html).
+
+**Reconfigure does not automatically select the latest upstream versions.**
+`scripts/guix` uses `guix time-machine` with the commits in `channels.scm`, much
+like a locked Nix input. `git pull` gets this repository's configuration and any
+new pins committed here. Running `guix pull` separately updates your user's
+Guix but does not change the versions selected by this wrapper; even
+`guix pull -C channels.scm` uses the recorded commits.
+
+To update channel-provided packages and the OS beyond those pins, first advance
+the Guix and Nonguix commits in `channels.scm` to the desired authenticated
+revisions, preserving their channel introductions. Run the checks and both
+hosts' system/Home builds below before committing the new pins. Then apply the
+appropriate host commands. Versions are those packaged at the selected channel
+revisions, which may lag upstream. Separately pinned source recipes, including
+OXWM, require their own version/hash updates.
+
+Firefox and Codex are exceptions: every Home build/reconfigure resolves the
+newest cached stable Firefox and latest official stable Codex as described
+above. Network or Firefox cache verification failures abort the Home command.
+Editor plugins and browser extensions retain their separate update mechanisms.
+`guix upgrade` only updates packages in an imperative profile; it does not
+replace system or Home reconfiguration.
+
+### Update T490
+
+Run on **T490**, as `przvl`, from the existing checkout (assumed `~/guix`):
+
+```sh
+cd ~/guix && \
+  git pull --ff-only && \
+  sudo ./scripts/guix system reconfigure -L modules hosts/t490/system.scm && \
+  ./scripts/guix home reconfigure -L modules hosts/t490/home.scm
+```
+
+This applies T490's storage, kernel/Intel Wi-Fi firmware, battery and desktop
+configuration. Complete the one-time Nonguix cache-key authorization above if
+this is the first Home update.
+
+### Update Zen
+
+Run on **Zen**, as `przvl`, from the existing checkout (assumed `~/guix`):
+
+```sh
+cd ~/guix && \
+  git pull --ff-only && \
+  sudo ./scripts/guix system reconfigure -L modules hosts/zen/system.scm && \
+  ./scripts/guix home reconfigure -L modules hosts/zen/home.scm
+```
+
+This applies Zen's storage, kernel/Intel Wi-Fi, graphics and SOF audio firmware,
+battery and desktop configuration. The installed storage records must already
+match this machine; see [Zen setup](docs/zen.md) for first-time preparation and
+Nonguix cache-key authorization.
+
+### Switching, restarting and rollback
+
+Each block is one chained shell command, stopping at the first failure. System
+and Home have separate generations: if Home fails after system reconfiguration,
+the system change remains applied. Fix the reported error and rerun the Home
+command as `przvl`, without `sudo`.
+
+Reconfiguration activates the new configuration and selects the system's next
+boot generation. Reboot with `sudo reboot` when ready to load a changed kernel
+and its boot-time firmware. For Home/session changes, exit OXWM, log out of the
+console, log back in and run `startx`; restart applications to use their updated
+versions. Neither command block automatically reboots.
+
+Keep a working previous generation. If the new system cannot boot, select an
+older generation from the bootloader menu. To select the previous system for
+boot and independently roll Home back:
+
+```sh
+sudo ./scripts/guix system roll-back
+./scripts/guix home roll-back
+```
+
+Reboot to run the previous system fully, and start a fresh login session for
+the previous Home environment. These commands do not roll back personal files,
+application data or this Git checkout. Never use `system init` for updates.
+
 ## Check and build
 
 ```sh
@@ -154,6 +242,8 @@ directly on both hosts. See [resolver ownership and applying DNS fixes](docs/net
 ./scripts/guix build -L modules -e '(@ (workstation packages codex) codex)'
 ./scripts/guix system build -L modules hosts/t490/system.scm
 ./scripts/guix home build -L modules hosts/t490/home.scm
+./scripts/guix system build -L modules hosts/zen/system.scm
+./scripts/guix home build -L modules hosts/zen/home.scm
 git diff --check
 ```
 
