@@ -1,5 +1,26 @@
 # Validation
 
+## nvimide executable deployment, 2026-09-26
+
+The reported permission denial had the same cause as the terminal wrapper:
+`editor-launcher` imported the executable script as a flat `local-file`, losing
+its executable bit in the store. Its Home import now uses `#:recursive? #t`.
+The existing POSIX-shell port already matches Blix's launcher: change to an
+optional directory argument, set `BLIX_NVIMIDE=1`, and pass remaining arguments
+to the Home-provided Neovim. No editor configuration changes were needed.
+
+ShellCheck passes. A real Neovim run with disposable state/cached test plugins
+verified a directory and filename containing spaces, argument forwarding, the
+IDE environment flag, Seafoam, the explorer and exactly two terminal panes with
+focus in the editor. Repository checks now require both executable checkout mode
+and recursive Home import, plus Neovim in the profile. Reconfigure Home to fix
+the symlink target; manual chmod of a store item is unnecessary.
+
+The combined repository checks and complete T490 System/Home evaluation pass
+using the pinned channel sources, including the Firefox and Codex assertions.
+This development machine has no working Guix daemon, so daemon-backed package
+and Home builds remain to be run on the T490; evaluation is not a build test.
+
 ## Blix Firefox policy port, 2026-09-26
 
 The user requested replacing LibreWolf with their existing Blix Firefox setup.

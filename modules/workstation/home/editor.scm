@@ -23,4 +23,6 @@
     `(("nvim" ,(repository-file "home/przvl/config/nvim" #:recursive? #t))))
    (simple-service
     'editor-launcher home-files-service-type
-    `((".local/bin/nvimide" ,(repository-file "home/przvl/bin/nvimide"))))))
+    ;; Flat local-file imports strip the executable bit in the Guix store.
+    `((".local/bin/nvimide" ,(repository-file "home/przvl/bin/nvimide"
+                                             #:recursive? #t))))))

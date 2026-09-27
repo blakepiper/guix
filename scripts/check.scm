@@ -10,6 +10,20 @@
 
 (define system (primitive-load "hosts/t490/system.scm"))
 (define home (primitive-load "hosts/t490/home.scm"))
+;; Check both checkout mode and store-import mode: a flat local-file silently
+;; turns an executable script into a non-executable store item.
+(let* ((service (find (lambda (service)
+                        (eq? (service-type-name (service-kind service)) 'editor-launcher))
+                      (home-environment-services home)))
+       (entry (and service (assoc ".local/bin/nvimide" (service-value service))))
+       (file (and entry (cadr entry))))
+  (unless (and (local-file? file) (local-file-recursive? file)
+               (string-suffix? "/home/przvl/bin/nvimide" (local-file-file file))
+               (not (zero? (logand #o111 (stat:perms (stat (local-file-file file))))))
+               (any (lambda (entry)
+                      (string=? "neovim" (package-name (if (pair? entry) (car entry) entry))))
+                    (home-environment-packages home)))
+    (error "nvimide must be deployed executable with Neovim in the Home profile")))
 (primitive-load "scripts/check-codex-release.scm")
 (define release codex-release)
 (define source (package-source codex))
