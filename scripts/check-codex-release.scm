@@ -4,7 +4,7 @@
 (let* ((asset `(("name" . ,%codex-asset)
                 ("state" . "uploaded")
                 ("browser_download_url" .
-                 "https://github.com/openai/codex/releases/download/rust-v99.1.2/codex-x86_64-unknown-linux-musl.tar.gz")
+                 "https://github.com/openai/codex/releases/download/rust-v99.1.2/codex-package-x86_64-unknown-linux-musl.tar.gz")
                 ("digest" . ,(string-append "sha256:" (make-string 64 #\a)))))
        (release `(("tag_name" . "rust-v99.1.2")
                   ("draft" . #f) ("prerelease" . #f)
@@ -26,8 +26,11 @@
     (github->codex-release (alist-delete "prerelease" release)))
   (test-error "reject non-CLI release tags" #t
     (github->codex-release (replace-field release "tag_name" "sdk-v99.1.2")))
-  (test-error "require musl asset" #t
+  (test-error "require complete runtime package" #t
     (github->codex-release (replace-field release "assets" #())))
+  (test-error "a CLI-only asset cannot replace the runtime bundle" #t
+    (github->codex-release
+     (with-asset "name" "codex-x86_64-unknown-linux-musl.tar.gz")))
   (test-error "reject duplicate assets" #t
     (github->codex-release (replace-field release "assets" (vector asset asset))))
   (test-error "require complete upload" #t
@@ -39,7 +42,7 @@
   (test-error "reject moving download URLs" #t
     (github->codex-release
      (with-asset "browser_download_url"
-                 "https://github.com/openai/codex/releases/latest/download/codex-x86_64-unknown-linux-musl.tar.gz")))
+                 "https://github.com/openai/codex/releases/latest/download/codex-package-x86_64-unknown-linux-musl.tar.gz")))
   (test-error "reject unofficial download URLs" #t
     (github->codex-release
      (with-asset "browser_download_url" "https://example.org/codex.tar.gz")))

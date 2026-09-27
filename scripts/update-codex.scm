@@ -12,8 +12,9 @@
       (close-port port)
       (call-with-output-file destination
         (lambda (output) (scm->json release output) (newline output)))
-      (format #t "Using latest stable Codex ~a (SHA-256 ~a).~%"
-              (assoc-ref release "version") (assoc-ref release "sha256"))))
+      (format #t "Using latest stable Codex ~a: ~a (SHA-256 ~a).~%"
+              (assoc-ref release "version") (assoc-ref release "asset")
+              (assoc-ref release "sha256"))))
   (lambda (key . args)
     (format (current-error-port)
             "Cannot refresh latest stable Codex; Home command aborted: ~s ~s~%"

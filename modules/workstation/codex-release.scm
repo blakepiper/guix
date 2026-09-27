@@ -7,7 +7,10 @@
   #:export (%codex-asset validate-codex-release github->codex-release
             read-codex-release))
 
-(define %codex-asset "codex-x86_64-unknown-linux-musl.tar.gz")
+;; Use the installer's complete runtime bundle. Its one digest covers the CLI,
+;; code-mode host and all bundled resources from the same release. The similarly
+;; named codex-x86_64 archive contains only the CLI and is not sufficient.
+(define %codex-asset "codex-package-x86_64-unknown-linux-musl.tar.gz")
 
 (define (matches? pattern value)
   (and (string? value) (string-match pattern value)))
@@ -45,7 +48,7 @@
            (digest (and asset (assoc-ref asset "digest"))))
       (unless (and asset (equal? (assoc-ref asset "state") "uploaded")
                    (matches? "^sha256:[0-9a-f]{64}$" digest))
-        (error "Latest Codex release lacks a musl asset with a SHA-256 digest"))
+        (error "Latest Codex release lacks the complete musl runtime package with a SHA-256 digest"))
       (validate-codex-release
        `(("version" . ,(substring tag 6))
          ("tag" . ,tag)

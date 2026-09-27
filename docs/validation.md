@@ -1,5 +1,59 @@
 # Validation
 
+## Complete automatically resolved Codex runtime, 2026-09-26
+
+The previous recipe selected the CLI-only archive. Help/onboarding worked, but
+it omitted `codex-code-mode-host`, which `install-context` resolves beside the
+physical executable (or in package resources). This explains the real T490's
+failure to execute code. The old smoke checks never exercised that path.
+
+The official installer instead uses `codex-package-<target>.tar.gz`. One latest
+release response now selects that complete bundle with its versioned URL and
+GitHub SHA-256 digest; no separately resolved components can drift. Every Home
+build/reconfigure still refreshes automatically and fails on missing/invalid
+release metadata. The checked-in record remains an offline reference only.
+
+The live resolution for this validation returned `rust-v0.157.1`:
+
+- Asset: `codex-package-x86_64-unknown-linux-musl.tar.gz`.
+- SHA-256: `0e211868c9fd73cb49ad35ac675b5eafdf6b9f453df8a493df980c59a590fe5f`,
+  independently verified after downloading the official archive.
+- Layout: `bin/codex`, `bin/codex-code-mode-host`, `codex-package.json`,
+  `codex-path/rg`, `codex-resources/bwrap`, `codex-resources/zsh/bin/zsh`, and
+  the complete `codex-resources/voice/` helper, libraries, plugins and notices.
+- CLI, code-mode host, rg and bwrap are static x86-64 PIEs. Zsh, voice host and
+  voice libraries need dynamic linking. The build relocates interpreters and
+  adds Guix glibc/ncurses library paths, retaining upstream relative paths.
+  There are 28 dynamic ELF files in this release. Upstream voice inventory
+  hashes describe the original archive, before Guix's loader relocation.
+
+The package keeps that layout intact. Guix's wrapper moves the real CLI only
+to `bin/.codex-real`, so executable-relative discovery still finds its sibling
+host and parent metadata. Existing standalone mode and explicit remote options
+are preserved. No daemon copy or separate app-server archive is provisioned;
+`codex exec` and `codex app-server` are built into the CLI.
+
+`scripts/check-codex-runtime.py` runs during every package build. It validates
+the manifest version/target/layout, executable companions, voice inventory,
+dynamic library resolution, CLI version/help and companion startup. It then
+sends a code-mode tool call through a local mock Responses server and asserts
+the real host evaluated JavaScript. It clears inherited credentials/config,
+uses disposable state, and leaves the host out of PATH to test layout discovery.
+No external API, login or model invocation is needed.
+
+Local validation exercised the actual Scheme builder with development-machine
+tools and all runtime checks passed. The resulting wrapper also passed
+ShellCheck. The complete runtime passed again in a bubblewrap filesystem with
+no `/bin`, `/usr` or `/lib64`, using only store paths, temporary state and proc/dev.
+Negative checks reject a missing code-mode host and mismatched package version.
+All 17 resolver tests and wrapper-routing regressions passed, as did complete
+System/Home evaluation with the exact local pinned Guix/Nonguix sources.
+This is not a daemon-backed Guix build: the normal repository check, package and
+Home build commands were attempted but time-machine cannot connect to the absent
+`/var/guix/daemon-socket/socket`. Actual audio hardware operation was not tested.
+
+Activation is Home-only: reconfigure Home and restart Codex.
+
 ## Home shell tools, 2026-09-26
 
 Home now includes the pinned channel's OpenSSH, fastfetch-minimal 2.66.0 and
@@ -190,7 +244,11 @@ Validation on the development machine:
   again, but stopped at the missing `/var/guix/daemon-socket/socket`. No Guix
   derivation build or activation is claimed. The T490 remains the integration test.
 
-## Initial official Codex musl migration, 2026-09-26
+## Initial official Codex musl migration, 2026-09-26 (superseded)
+
+The CLI-only layout below was incomplete: version/help/onboarding did not
+exercise code mode. The complete-runtime fix above replaces this recipe and
+its original runtime assumptions.
 
 The initial binary migration installed the official binary at the user's
 request, following unsuccessful source builds on the real T490. Earlier
@@ -215,7 +273,8 @@ source-build debugging details remain in Git history, not active instructions.
   account data. They do not establish authenticated API access or T490 boot.
 - Inspected the exact release's README, `install-context`, CLI dispatch,
   TUI server selection and Linux sandbox launcher. The single binary supports
-  standalone CLI/exec use without a sibling `codex-exec` or package metadata.
+  initial CLI/exec startup without a sibling `codex-exec`; this did not prove
+  tool execution worked without the code-mode host and package resources.
   It can use system bubblewrap and ripgrep on PATH; the Guix wrapper supplies
   those. An actual interactive test exposed that default startup tries to
   provision a daemon and fails without a complete upstream package. Repeating

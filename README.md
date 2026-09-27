@@ -61,7 +61,7 @@ recipe replaces the Lua download with a pinned Guix source input and limits
 build parallelism to two jobs.
 
 Codex tracks OpenAI's **latest stable release** of
-`codex-x86_64-unknown-linux-musl.tar.gz`. Every invocation of
+the complete `codex-package-x86_64-unknown-linux-musl.tar.gz` runtime. Every invocation of
 `./scripts/guix home build` or `./scripts/guix home reconfigure` checks
 [OpenAI's latest-release API](https://api.github.com/repos/openai/codex/releases/latest)
 before evaluating Home. It snapshots the release's version-specific asset URL
@@ -70,20 +70,24 @@ and SHA-256 for that command, then Guix verifies the download and installs a
 preparation command, and no network installer during activation.
 
 The latest-release check requires network access. If it fails, or the latest
-release lacks the musl asset or checksum, the Home command stops rather than
+release lacks the complete musl bundle or checksum, the Home command stops rather than
 silently using an older release. The temporary snapshot is removed afterward;
 tracked files stay unchanged. `home build` only builds; `home reconfigure`
 activates the resulting generation. Existing generations retain their exact
 Codex version and remain available for rollback.
 
-The launcher supplies Guix's bubblewrap and ripgrep on PATH for sandboxing and
-search and defaults to upstream's `--no-daemon` mode. Without that option,
-0.157.1 tries to provision a background daemon from package metadata absent
-from the single-binary archive. Local interactive use and `codex exec` need
-no adjacent resources or separate exec binary in standalone mode. Explicit
-`--remote` options are passed through without adding `--no-daemon`.
-Managed-daemon provisioning and its local agents overview require a complete
-upstream package and are not provisioned by this recipe.
+One bundle URL and SHA-256 cover the CLI, `codex-code-mode-host`, ripgrep,
+bubblewrap, Zsh, and voice resources together. Guix preserves `bin/`,
+`codex-package.json`, `codex-path/` and `codex-resources/`. Codex discovers its
+host beside its physical executable, not by relying on the user's PATH.
+The musl CLI and code-mode host are static; bundled GNU-linked helpers are
+relocated to Guix's loader and libraries. Build checks reject missing helpers,
+unexpected metadata, unresolved libraries and failed host discovery; a local
+mock API exercises real code-mode execution without credentials.
+
+The launcher retains the existing `--no-daemon` default, keeping local execution
+in the Guix-managed runtime rather than provisioning a separate mutable daemon.
+Explicit `--remote` options pass through without adding `--no-daemon`.
 The launcher preserves `HOME`, `CODEX_HOME`, authentication and configuration.
 No credentials are included. Update Codex through these Guix Home commands,
 rather than running Codex's own installer/updater.

@@ -7,8 +7,10 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages compression)
-  #:use-module (gnu packages virtualization)
-  #:use-module (gnu packages rust-apps)
+  #:use-module (gnu packages elf)
+  #:use-module (gnu packages ncurses)
+  #:use-module (gnu packages python)
+  #:use-module (workstation files)
   #:use-module (workstation codex-release))
 
 (define-public codex-release (read-codex-release))
@@ -21,38 +23,40 @@
      (origin
        (method url-fetch)
        (uri (assoc-ref codex-release "url"))
-       (file-name (string-append "codex-" version "-x86_64-linux-musl.tar.gz"))
+       (file-name (string-append "codex-package-" version "-x86_64-linux-musl.tar.gz"))
        (sha256
         (base16-string->bytevector
          (assoc-ref codex-release "sha256")))))
-    ;; No implicit GNU compiler inputs or source-rewriting phases.
+    ;; The installer bundle contains every companion from this same release.
+    ;; No Rust build, source rewriting, installer or activation-time downloads.
     (build-system trivial-build-system)
     (arguments
-     '(#:modules ((guix build utils))
+     `(#:modules ((guix build utils))
        #:builder
        (begin
          (use-modules (guix build utils))
          (let* ((out (assoc-ref %outputs "out"))
-                (bin (string-append out "/bin"))
-                (program (string-append bin "/codex")))
+                (program (string-append out "/bin/codex"))
+                (python (string-append (assoc-ref %build-inputs "python") "/bin/python3"))
+                (check (assoc-ref %build-inputs "runtime-check")))
            (setenv "PATH" (string-append (assoc-ref %build-inputs "gzip") "/bin"))
+           (mkdir-p out)
            (invoke (string-append (assoc-ref %build-inputs "tar") "/bin/tar")
-                   "xzf" (assoc-ref %build-inputs "source"))
-           (mkdir-p bin)
-           ;; The official archive contains exactly this static PIE executable.
-           (copy-file "codex-x86_64-unknown-linux-musl" program)
-           (chmod program #o555)
-           ;; Standalone Codex finds these tools on PATH. Do not fabricate a
-           ;; managed-daemon package or replace upstream's binary contents.
+                   "xzf" (assoc-ref %build-inputs "source") "-C" out)
+           ;; Preserve upstream layout and binaries. Even this musl bundle ships
+           ;; GNU-linked Zsh/voice resources: relocate their loader/RUNPATH to
+           ;; Guix, and verify the entire dynamic dependency closure.
+           (invoke python check out ,version "--relocate"
+                   (string-append (assoc-ref %build-inputs "patchelf") "/bin/patchelf")
+                   (assoc-ref %build-inputs "glibc")
+                   (assoc-ref %build-inputs "ncurses-with-tinfo"))
+           ;; .codex-real stays in bin beside the host; physical executable
+           ;; discovery still finds the unmodified upstream package metadata.
            (wrap-program program
              #:sh (string-append (assoc-ref %build-inputs "bash-minimal") "/bin/bash")
-             `("PATH" prefix
-               (,(string-append (assoc-ref %build-inputs "bubblewrap") "/bin")
-                ,(string-append (assoc-ref %build-inputs "ripgrep") "/bin"))))
-           ;; This release otherwise tries to provision a managed daemon from
-           ;; package metadata absent from the official single-binary archive.
-           ;; Keep explicit standalone/remote options intact and stop scanning
-           ;; at the argument separator (a prompt may look like an option).
+             (list "PATH" 'prefix (list (string-append out "/codex-path"))))
+           ;; Retain this workstation's standalone default and remote override.
+           ;; Do not provision a mutable daemon copy outside the Guix generation.
            (substitute* program
              (("exec -a")
               (string-append
@@ -65,22 +69,22 @@
                "done\n"
                "set -- \"${standalone[@]}\" \"$@\"\n"
                "exec -a")))
-           ;; Offline smoke checks use disposable state, never user credentials.
-           (setenv "HOME" (getcwd))
-           (setenv "CODEX_HOME" (string-append (getcwd) "/test-codex-home"))
-           (mkdir-p (getenv "CODEX_HOME"))
-           (invoke program "--version")
-           (invoke program "--help")
-           (invoke program "--no-daemon" "--version")
-           (invoke program "exec" "--help")))))
-    (native-inputs (list tar gzip))
-    (inputs (list bash-minimal bubblewrap ripgrep))
+           ;; Offline, isolated state plus a loopback mock API. This must really
+           ;; execute code through the discovered host, not just print --help.
+           (invoke python check out ,version)))))
+    (native-inputs
+     `(("tar" ,tar)
+       ("gzip" ,gzip)
+       ("patchelf" ,patchelf)
+       ("python" ,python-minimal)
+       ("runtime-check" ,(repository-file "scripts/check-codex-runtime.py"))))
+    (inputs (list bash-minimal glibc ncurses/tinfo))
     (supported-systems '("x86_64-linux"))
     (home-page "https://github.com/openai/codex")
-    (synopsis "Official standalone Codex CLI for Linux x86-64")
-    (description "Install OpenAI's versioned, checksum-pinned musl release of
-Codex CLI without compiling it.  The executable is statically linked; a Guix
-wrapper supplies bubblewrap and ripgrep and selects standalone mode, while
-preserving user configuration and authentication.  Hosted model services are
-separate from the client.")
+    (synopsis "Official complete Codex runtime for Linux x86-64")
+    (description "Install the complete official Codex runtime bundle for one
+resolved stable release, verified by Guix with SHA-256.  The CLI, code-mode
+host, search and sandbox tools, Zsh and voice resources retain their upstream
+layout.  Dynamic helpers use Guix libraries; the launcher selects standalone
+mode and preserves user configuration and authentication.")
     (license license:asl2.0)))

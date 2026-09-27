@@ -36,20 +36,18 @@ Read-only local references inspected on 2026-09-26:
   per-invocation JSON snapshot supplies the versioned URL and SHA-256 to the
   recipe; evaluation and activation do not query upstream. The checked-in
   metadata remains an offline reference for other commands, not a Home pin.
-  This uses the official Linux x86_64 musl executable instead of a local
-  compilation. The initial release API lists asset ID `589592614`, named
-  `codex-x86_64-unknown-linux-musl.tar.gz`; its download URL and independently
-  verified SHA-256 are retained in `sources/releases.json` as the reference.
-  The archive contains one static PIE executable. Upstream's README explicitly
-  documents renaming that executable to `codex`. The package uses Guix's
-  trivial build system to unpack it and wrap PATH with bubblewrap and ripgrep.
-  Upstream's `install-context` and `linux-sandbox` modules support these tools
-  on PATH without adjacent resource directories; `codex exec` is built in.
-  Version 0.157.1's default interactive startup nevertheless tries to provision
-  a daemon and fails without complete package metadata. The launcher defaults
-  to upstream's supported `--no-daemon` mode (preserving explicit `--remote`
-  options), which successfully opens onboarding with disposable state. No
-  synthetic daemon package, updater, configuration or credentials are installed.
+  The recipe now uses the complete `codex-package-x86_64-unknown-linux-musl.tar.gz`
+  bundle used by the [official installer](https://github.com/openai/codex/blob/rust-v0.157.1/scripts/install/install.sh),
+  not the similarly named CLI-only archive. The bundle contains the code-mode
+  host, rg, bwrap, Zsh, voice helper/libraries and metadata from one release.
+  [Package layout](https://github.com/openai/codex/blob/rust-v0.157.1/scripts/codex_package/layout.py)
+  and [runtime discovery](https://github.com/openai/codex/blob/rust-v0.157.1/codex-rs/install-context/src/lib.rs)
+  require preserving the physical `bin/` directory, adjacent host and package
+  root resources. The existing standalone/remote wrapper behavior is retained.
+  Dynamic bundled helpers are relocated using Guix glibc and ncurses/tinfo;
+  static binaries are unchanged. The offline mock Responses check follows the
+  protocol exercised by upstream `scripts/codex_package/smoke_tests/`, without
+  importing its SDK or introducing sibling-repository runtime dependencies.
 - Guix `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656`:
   <https://codeberg.org/guix/guix>. `channels.scm` retains the official channel
   introduction for authenticated updates. Its Zig and Rust definitions remain
