@@ -12,7 +12,21 @@ case "${1-}:${2-}" in
     trap 'exit 130' INT
     trap 'exit 143' TERM
     GUIX_CODEX_RELEASE_FILE="$codex_release_dir/release.json"
-    export GUIX_CODEX_RELEASE_FILE
+    GUIX_FIREFOX_RELEASE_FILE="$codex_release_dir/firefox.json"
+    export GUIX_CODEX_RELEASE_FILE GUIX_FIREFOX_RELEASE_FILE
+    guix time-machine -C "$root/channels.scm" -- \
+      repl -L "$root/modules" "$root/scripts/update-firefox.scm"
+    # Fetch the signed cached output and its closure before Home evaluation.
+    # Never build Firefox locally or offload a source build on a cache miss.
+    if ! guix time-machine -C "$root/channels.scm" -- build \
+      --max-jobs=0 --no-offload \
+      --substitute-urls='https://substitutes.nonguix.org https://ci.guix.gnu.org https://bordeaux.guix.gnu.org' \
+      --root="$codex_release_dir/firefox-root" \
+      "$(cat "$GUIX_FIREFOX_RELEASE_FILE.path")"; then
+      echo 'Firefox cache download failed; no Firefox source build was attempted.' >&2
+      echo 'For first use, authorize the cache: sudo guix archive --authorize < sources/nonguix-signing-key.pub' >&2
+      exit 1
+    fi
     guix time-machine -C "$root/channels.scm" -- \
       repl -L "$root/modules" "$root/scripts/update-codex.scm"
     guix time-machine -C "$root/channels.scm" -- "$@"

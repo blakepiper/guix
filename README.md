@@ -55,9 +55,31 @@ No login credentials or hosted provider configuration are included here.
 Firefox uses the privacy policies imported from Blix: strict tracking protection,
 Global Privacy Control, blocked AI features and sponsored content, and managed
 uBlock Origin, Dark Reader and Enhancer for YouTube extensions (including private
-windows). The small policy package reuses Firefox from the pinned Nonguix channel;
-changing policies does not recompile Firefox. Firefox installs/updates the
-extensions from Mozilla Add-ons when it runs, matching Blix's behavior.
+windows). Each `./scripts/guix home build` or `home reconfigure` selects the newest
+successful stable x86_64 Firefox available in the Nonguix cache (among its latest
+100 Firefox builds), downloads the signed output and runtime closure with
+compilation/offloading disabled, then adds the policies. Missing metadata,
+untrusted signatures or unavailable downloads abort before Home builds.
+Firefox updates independently of `channels.scm`; the rest of the system stays
+pinned. `sources/firefox.json` is an offline evaluation reference, not the
+version used by the Home wrapper. Always use `./scripts/guix` for Home updates.
+The small policy package never depends on Firefox's source derivation.
+Firefox installs/updates the extensions from Mozilla Add-ons when it runs, matching Blix's behavior.
+On an existing machine, authorize the checked-in Nonguix signing key once
+before the first Home update (run from this repository):
+
+```sh
+sudo guix archive --authorize < sources/nonguix-signing-key.pub
+./scripts/guix home reconfigure -L modules hosts/t490/home.scm
+```
+
+The Home wrapper explicitly supplies the cache URL, so this works before a
+system reconfigure. The desktop system configuration also preserves the cache
+URL and signing key for future system generations. Authorization trusts this
+key for substitutes generally, not only Firefox. It is separate from channel
+source authentication. The wrapper's temporary GC root protects the fetched
+Firefox until the Home command finishes.
+
 Its existing Firefox profile remains user-managed. Inspect `about:policies`
 to see the active policy set.
 

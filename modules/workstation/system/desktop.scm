@@ -13,6 +13,11 @@
 (define* (desktop-services #:key (xorg-extra '()))
   (append
    (list
+    (simple-service
+     'nonguix-substitutes guix-service-type
+     (guix-extension
+      (substitute-urls '("https://substitutes.nonguix.org"))
+      (authorized-keys (list (repository-file "sources/nonguix-signing-key.pub")))))
     (service dbus-root-service-type)
     (service polkit-service-type)
     (service elogind-service-type

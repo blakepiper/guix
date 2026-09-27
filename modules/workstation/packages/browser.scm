@@ -2,15 +2,20 @@
   #:use-module (guix packages)
   #:use-module (guix build-system trivial)
   #:use-module ((nongnu packages mozilla) #:prefix mozilla:)
+  #:use-module (workstation firefox-release)
   #:use-module (workstation files))
+
+(define firefox-release (read-firefox-release))
 
 (define-public firefox-blix
   (package
     (inherit mozilla:firefox)
     (name "firefox-blix")
+    (version (assoc-ref firefox-release "version"))
+    (supported-systems '("x86_64-linux"))
     (source #f)
-    ;; Reuse the pinned channel's Firefox build/substitute. Policies belong in
-    ;; the physical application directory; a Home dotfile or a symlink to the
+    ;; Consume only the resolved store output; no Firefox source derivation.
+    ;; Policies belong in the physical application directory; a dotfile or a symlink to the
     ;; original executable would not reliably select this distribution policy.
     (build-system trivial-build-system)
     (arguments
@@ -45,10 +50,10 @@
              (copy-file (assoc-ref %build-inputs "policies") policy))))))
     (native-inputs '())
     (inputs
-     `(("firefox" ,mozilla:firefox)
+     `(("firefox" ,(cached-firefox (assoc-ref firefox-release "path")))
        ("policies" ,(repository-file "home/przvl/config/firefox/policies.json"))))
     (synopsis "Firefox with the Blix privacy policies")
-    (description "Firefox from the pinned Nonguix channel with the workstation's
+    (description "Firefox from the Nonguix binary cache with the workstation's
 Blix enterprise policies: strict tracking protection, Global Privacy Control,
 blocked AI features and sponsored content, plus managed privacy extensions.
 The policy layer reuses the existing Firefox package without recompiling it.")))

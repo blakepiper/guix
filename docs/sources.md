@@ -120,3 +120,30 @@ Only `hosts/t490/system.scm` selects its `linux` kernel and `iwlwifi-firmware`.
 The shared base retains Linux-libre and `%base-firmware`; no microcode initrd,
 full firmware bundle, additional substitute server or signing key is configured.
 Channel introduction authentication remains enabled in the time-machine path.
+
+## Cached Firefox selection, 2026-09-26
+
+Firefox Home updates now resolve Nonguix Cuirass's latest 100
+`firefox.x86_64-linux` builds from
+<https://cuirass.nonguix.org/api/latestbuilds?job=firefox.x86_64-linux&system=x86_64-linux&nr=100>.
+The resolver filters successful stable Firefox builds, sorts by numeric version
+(newer rebuild first on ties), and selects the first output still advertised by
+<https://substitutes.nonguix.org>. It does not evaluate downloaded Scheme or
+change the pinned Guix/Nonguix channels. Network failures abort; only a missing
+narinfo (HTTP 404) allows trying the next candidate.
+
+The checked-in signing key comes from
+<https://substitutes.nonguix.org/signing-key.pub> and matches the key in
+<https://github.com/nonguix/nonguix#substitutes-for-nonguix>. Guix, not the
+metadata resolver, authenticates the downloaded substitute and its closure.
+The key authorizes substitutes generally, not just Firefox. Home prefetch uses
+`--max-jobs=0 --no-offload` and a temporary GC root. The policy package takes the
+resolved store path directly, so Firefox's source derivation/toolchain is not
+part of its build graph. Other Home packages may still build normally.
+
+The initial offline reference is Firefox 156.0, output
+`/gnu/store/ybk9mpvi5aw47hr1bwpf1bqnqjv2x3ml-firefox-156.0`, from
+<https://cuirass.nonguix.org/build/1002769/details>. Home build/reconfigure always
+refreshes the per-command record; it does not use this reference as an update
+pin. The existing Blix policy builder remains in place. No sibling repository
+is used at build time or runtime, and no Mozilla upstream binary is introduced.

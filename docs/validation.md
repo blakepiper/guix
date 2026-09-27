@@ -1,5 +1,34 @@
 # Validation
 
+## Cached Firefox updates, 2026-09-26
+
+Home build/reconfigure now resolves the newest successful stable x86_64
+Firefox advertised by the Nonguix cache, fetches its signed output and closure
+with local builds/offloading disabled, then applies the existing Blix policies.
+The policy package uses a file-like store reference with no Firefox source
+recipe. The desktop service retains the cache URL/key; existing installations
+need the documented one-time key authorization before the first Home update.
+
+Validation:
+
+- Live Cuirass/cache resolution selected Firefox 156.0 and the exact output
+  `ybk9mpvi5aw47hr1bwpf1bqnqjv2x3ml-firefox-156.0` seen in build 1002769.
+- Selection tests passed: numeric version ordering; exclusion of failed jobs,
+  other architectures, ESR and beta builds; rejection of malformed/mismatched
+  paths. A disconnected-store test verified that the file-like input lowers
+  directly to the expected store path without daemon calls or a derivation.
+- Shell wrapper tests passed for Home build/reconfigure, argument forwarding,
+  cleanup, metadata/download failures and propagation of later command errors.
+  They require downloads with `--max-jobs=0 --no-offload` before Home execution.
+- ShellCheck and `git diff --check` passed.
+- Repository assertions and T490 System/Home evaluation passed using the exact
+  pinned channel sources and the local Nix-provided Guix/Guile runtime.
+- The required `./scripts/guix repl -L modules scripts/check.scm` invocation
+  cannot run directly here because `guix` is absent from PATH. Package, System
+  and Home builds attempted with the local Guix runtime cannot connect to
+  `/var/guix/daemon-socket/socket`. These are unavailable build checks, not
+  successful builds. No activation, installation or boot test was performed.
+
 ## nvimide executable deployment, 2026-09-26
 
 The reported permission denial had the same cause as the terminal wrapper:
