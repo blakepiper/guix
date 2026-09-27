@@ -140,6 +140,9 @@ Each resolved build still uses a fixed URL/hash, so changed asset bytes fail
 verification. No recipe edit or repository update is needed for new stable
 Codex releases with the same supported distribution layout.
 
+NetworkManager manages DHCP/connection DNS and writes `/etc/resolv.conf`
+directly on both hosts. See [resolver ownership and applying DNS fixes](docs/networking.md).
+
 ## Check and build
 
 ```sh

@@ -4,6 +4,7 @@
              ((gnu packages linux) #:prefix libre:)
              ((nongnu packages linux) #:prefix nongnu:)
              (gnu services desktop) (gnu services xorg)
+             (gnu services networking)
              (workstation system base)
              (workstation packages browser)
              (workstation firefox-release)
@@ -239,3 +240,30 @@
   (error "Host display policies must remain distinct"))
 (fold-services (home-environment-services zen-home) #:target-type home-service-type)
 (display "Zen storage guard, composition, Home and both service graphs checked.\n")
+
+;; DHCP/connection DNS must reach libc even when the installer left a regular
+;; placeholder resolv.conf. A store-managed resolver file would block NM writes.
+(for-each
+ (lambda (os)
+   (let* ((services (operating-system-services os))
+          (managers (filter (lambda (s)
+                              (eq? (service-kind s) network-manager-service-type))
+                            services))
+          (config (and (= 1 (length managers)) (service-value (car managers))))
+          (files (and config
+                      ((@@ (gnu services networking)
+                           network-manager-configuration-extra-configuration-files)
+                       config)))
+          (resolver (and files (assoc "90-workstation-dns.conf" files))))
+     (unless (and config
+                  (equal? (network-manager-configuration-dns config) "default")
+                  resolver (plain-file? (cadr resolver))
+                  (equal? (plain-file-content (cadr resolver))
+                          "[main]\nrc-manager=file\n")
+                  (not (assoc "resolv.conf"
+                              (service-value (fold-services services
+                                                            #:target-type etc-service-type)))))
+       (error "NetworkManager must own dynamic DNS; no static/placeholder resolv.conf"
+              (operating-system-host-name os)))))
+ (list system zen-system))
+(display "Both hosts use NetworkManager-managed DHCP DNS without a static resolver file.\n")

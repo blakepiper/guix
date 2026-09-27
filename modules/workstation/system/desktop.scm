@@ -27,7 +27,16 @@
              (elogind-configuration
               (handle-lid-switch 'suspend)
               (handle-lid-switch-docked 'ignore)))
-    (service network-manager-service-type)
+    (service network-manager-service-type
+             (network-manager-configuration
+              (dns "default")
+              ;; The package defaults to openresolv, which rejects existing
+              ;; files without its ownership header (e.g. installer leftovers).
+              ;; Let NM publish connection/DHCP DNS directly, on both hosts.
+              (extra-configuration-files
+               (list (list "90-workstation-dns.conf"
+                           (plain-file "90-workstation-dns.conf"
+                                       "[main]\nrc-manager=file\n"))))))
     (service wpa-supplicant-service-type)
     (service ntp-service-type)
     (service startx-command-service-type
