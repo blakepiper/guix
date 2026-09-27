@@ -1,5 +1,21 @@
 # Sources and port decisions
 
+## Firefox stable-release verification, 2026-09-26
+
+Home resolution now intersects successful Nonguix Firefox builds with Mozilla's
+published [major release history](https://product-details.mozilla.org/1.0/firefox_history_major_releases.json)
+and [stability release history](https://product-details.mozilla.org/1.0/firefox_history_stability_releases.json).
+A numeric package version alone is insufficient. Both histories are fetched
+before package evaluation; failure aborts the Home command. Version selection
+remains dynamic and downloads still come exclusively from the signed Nonguix
+cache, with no Firefox source-build fallback. Blix policies are unchanged.
+
+The installed 156.0 package is built from release sources. The pinned Nonguix
+`nongnu/packages/mozilla.scm` uses `--enable-release` and
+`--disable-official-branding`; the cached application's `CodeName=Nightly` and
+default update channel are therefore not evidence of a nightly source version.
+The cache's upstream branding is retained rather than relabeling the binary.
+
 ## Guix terminal launch, 2026-09-26
 
 The inherited `st-bash` wrapper is removed. OXWM's Return binding now launches

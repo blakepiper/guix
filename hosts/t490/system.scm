@@ -29,6 +29,14 @@
   Option \"DisableWhileTyping\" \"true\"
 EndSection
 Section \"InputClass\"
+  Identifier \"T490 Logitech G502 HERO natural scrolling\"
+  MatchIsPointer \"on\"
+  MatchProduct \"Logitech G502 HERO Gaming Mouse\"
+  MatchUSBID \"046d:c08b\"
+  MatchDriver \"libinput\"
+  Option \"NaturalScrolling\" \"true\"
+EndSection
+Section \"InputClass\"
   Identifier \"External Gaming Keyboard\"
   MatchIsKeyboard \"on\"
   MatchProduct \"Gaming Keyboard\"

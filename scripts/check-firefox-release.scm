@@ -16,10 +16,19 @@
                 (fixture "158.0" 0 "aarch64-linux" "firefox.aarch64-linux")
                 (fixture "159.0" 0 "x86_64-linux" "firefox-esr.x86_64-linux")
                 (fixture "160.0b1" 0 "x86_64-linux" "firefox.x86_64-linux")
-                (fixture "156.0" 0 "x86_64-linux" "firefox.x86_64-linux")))))
+                (fixture "161.0a1" 0 "x86_64-linux" "firefox.x86_64-linux")
+                (fixture "162.0" 0 "x86_64-linux" "firefox.x86_64-linux")
+                (fixture "156.0.1" 0 "x86_64-linux" "firefox.x86_64-linux")
+                (fixture "156.0" 0 "x86_64-linux" "firefox.x86_64-linux"))
+        '("99.0" "156.0" "156.0.1" "157.0" "158.0" "159.0"))))
   (unless (equal? (map (lambda (release) (assoc-ref release "version")) candidates)
-                  '("156.0" "99.0"))
-    (error "Firefox selection must order numeric versions and exclude failed/foreign/ESR/beta builds")))
+                  '("156.0.1" "156.0" "99.0"))
+    (error "Firefox selection must exclude failed/foreign/ESR/beta/nightly/unreleased builds")))
+
+(unless (null? (firefox-candidates
+                (vector (fixture "156.0" 0 "x86_64-linux" "firefox.x86_64-linux"))
+                '()))
+  (error "Missing stable history must not allow a candidate"))
 
 (for-each
  (lambda (release)

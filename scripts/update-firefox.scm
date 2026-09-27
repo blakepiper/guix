@@ -1,15 +1,32 @@
 ;; Metadata only: downloads and signature verification are handled by Guix.
 (use-modules (guix http-client) (json) (ice-9 textual-ports)
-             (srfi srfi-34)
+             (srfi srfi-34) (srfi srfi-1)
              (workstation firefox-release))
+
+(define (release-history file)
+  (let* ((port (http-fetch
+                (string-append "https://product-details.mozilla.org/1.0/" file)
+                #:timeout 30))
+         (history (json->scm port)))
+    (close-port port)
+    (unless (and (list? history) (pair? history)
+                 (every (lambda (entry)
+                          (and (pair? entry) (string? (car entry))
+                               (string? (cdr entry))))
+                        history))
+      (error "Invalid Mozilla stable release history" file))
+    (map car history)))
 
 (catch #t
   (lambda ()
     (let* ((destination (or (getenv "GUIX_FIREFOX_RELEASE_FILE")
                             (error "Missing per-command Firefox release file")))
+           (stable-versions
+            (append (release-history "firefox_history_major_releases.json")
+                    (release-history "firefox_history_stability_releases.json")))
            (port (http-fetch
                   "https://cuirass.nonguix.org/api/latestbuilds?job=firefox.x86_64-linux&system=x86_64-linux&nr=100" #:timeout 30))
-           (candidates (firefox-candidates (json->scm port))))
+           (candidates (firefox-candidates (json->scm port) stable-versions)))
       (close-port port)
       (let loop ((remaining candidates))
         (when (null? remaining)

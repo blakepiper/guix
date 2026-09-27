@@ -33,7 +33,7 @@
       (error "Invalid cached stable Firefox release" release))
     release))
 
-(define (firefox-candidates builds)
+(define (firefox-candidates builds stable-versions)
   ;; The API is ordered newest build first; stable sort keeps that order for
   ;; rebuilds of the same version. ESR, other systems and failed jobs cannot win.
   (stable-sort
@@ -47,6 +47,8 @@
            (let ((name (assoc-ref build "nixname")))
              (and (string? name)
                   (string-match "^firefox-[0-9]+(\\.[0-9]+)+$" name)
+                  ;; A numeric version alone does not prove a stable release.
+                  (member (substring name 8) stable-versions)
                   (validate-firefox-release
                    `(("version" . ,(substring name 8))
                      ("path" . ,(assoc-ref

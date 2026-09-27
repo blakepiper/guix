@@ -57,13 +57,17 @@ Global Privacy Control, blocked AI features and sponsored content, and managed
 uBlock Origin, Dark Reader and Enhancer for YouTube extensions (including private
 windows). Each `./scripts/guix home build` or `home reconfigure` selects the newest
 successful stable x86_64 Firefox available in the Nonguix cache (among its latest
-100 Firefox builds), downloads the signed output and runtime closure with
+100 Firefox builds), verifies its version against Mozilla's published major and
+stability release histories, downloads the signed output and runtime closure with
 compilation/offloading disabled, then adds the policies. Missing metadata,
 untrusted signatures or unavailable downloads abort before Home builds.
 Firefox updates independently of `channels.scm`; the rest of the system stays
 pinned. `sources/firefox.json` is an offline evaluation reference, not the
 version used by the Home wrapper. Always use `./scripts/guix` for Home updates.
 The small policy package never depends on Firefox's source derivation.
+Nonguix disables official branding, so its stable browser can display “Nightly.”
+The resolver checks published release versions, not this branding label, and
+rejects beta, nightly and unpublished versions without pinning a version number.
 Firefox installs/updates the extensions from Mozilla Add-ons when it runs, matching Blix's behavior.
 On an existing machine, authorize the checked-in Nonguix signing key once
 before the first Home update (run from this repository):
