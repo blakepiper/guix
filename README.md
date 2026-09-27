@@ -111,6 +111,37 @@ git diff --check
 Evaluation is not a successful build or a hardware test. See
 [validation notes](docs/validation.md) for what has actually been checked.
 
+## X11 session startup
+
+Console login followed by `startx` starts the Home-managed `.xinitrc`. It adds
+the Guix Home/system profiles to PATH and waits for OXWM. Display setup and
+background helpers are optional: failures are logged, and cleanup runs when
+OXWM exits. Session output goes to `~/.local/state/oxwm/session.log` (or under
+`$XDG_STATE_HOME`), with one previous session retained. There is no dependency
+on `~/.xsession-errors` or a display manager.
+
+The system uses Shepherd and standalone elogind, not systemd. `loginctl` is
+elogind's command for locking, suspend and power actions; it is intentional.
+The privileged i3lock installed by Guix lives at `/run/privileged/bin/i3lock`.
+Elogind normally supplies `/run/user/UID`; if that runtime environment is
+missing, the X session uses private temporary helper state and logs a warning.
+A fresh console login is still needed for normal Guix Home user services.
+
+Existing installations need this one-time system update to create
+`/tmp/.X11-unix` as root at boot and repair existing ownership to `root:root`
+with mode 1777. Home cannot manage that root-owned system directory:
+
+```sh
+sudo ./scripts/guix system reconfigure -L modules hosts/t490/system.scm
+./scripts/guix home reconfigure -L modules hosts/t490/home.scm
+# Log out of the console, log back in, then:
+startx
+```
+
+No reboot or manual socket-directory repair is needed. Later session-script
+changes need only Home reconfiguration. Developers can run the isolated shell
+regressions with `python3 scripts/check-xsession.py`; no X server is required.
+
 ## Install on the T490
 
 Back up the laptop first. Boot an official Guix installer in UEFI mode using a

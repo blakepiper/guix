@@ -26,6 +26,22 @@
              (xorg-configuration
               (keyboard-layout (keyboard-layout "us"))
               (extra-config xorg-extra)))
+    ;; Our console desktop uses %base-services, not %desktop-services, so it
+    ;; must explicitly create X's shared socket directory before a user Xorg.
+    (service x11-socket-directory-service-type)
+    ;; The standard service creates/chmods but does not repair ownership of
+    ;; a directory previously created by rootless Xorg. Activation handles
+    ;; existing installations immediately, without deleting live sockets.
+    (simple-service
+     'workstation-x11-socket-permissions activation-service-type
+     #~(begin
+         (use-modules (guix build utils))
+         (let ((directory "/tmp/.X11-unix"))
+           (mkdir-p directory)
+           (unless (eq? 'directory (stat:type (lstat directory)))
+             (error "X11 socket path must be a real directory" directory))
+           (chown directory 0 0)
+           (chmod directory #o1777))))
     (service screen-locker-service-type
              (screen-locker-configuration
               (name "i3lock")

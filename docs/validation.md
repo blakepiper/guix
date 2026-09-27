@@ -1,5 +1,82 @@
 # Validation
 
+## Console X11 session startup, 2026-09-26
+
+The user reports the T490 System and Home are activated, OXWM and its managed
+Lua configuration are present, and validation succeeds. Xorg starts but exits
+cleanly when its client script terminates. Repository investigation found:
+
+- The pinned `startx-command-service-type` installs a wrapper that invokes
+  `xinit -- Xorg ...`; xinit selects the executable `~/.xinitrc`. This bypasses
+  display-manager session wrappers, including their `.xsession-errors` setup.
+  Home already deploys the executable repository file correctly.
+- The old `.xinitrc` used `set -eu` around foreground `xsetroot`, `xset` and
+  `alpinews-monitors` calls before installing its cleanup trap. Any nonzero
+  result, including a missing command or RandR mode/rate failure,
+  could terminate the X client before OXWM ran. It only prepended `.local/bin`,
+  assuming the current console shell had already sourced the Home environment.
+  The exact failing command on the T490 cannot be established from its clean
+  Xorg shutdown alone; this fix does not assume an OXWM fault.
+- Asynchronous helper failures do not propagate through POSIX `set -e`.
+  Waiting only for OXWM is retained. Its exit status is now logged and preserved;
+  helper and transient-state cleanup also runs on session termination signals.
+- `alpinews-monitors` retains its existing layout policy and its own failure
+  status. The session gives foreground setup a ten-second timeout plus a
+  two-second kill grace and treats errors as optional. Hotplug still uses
+  eudev's `udevadm`; clipboard events use the Home-packaged listener. Picom's
+  opaque configuration is unchanged.
+- The Guix Home profile supplies OXWM, X utilities, Picom, xss-lock, i3lock,
+  eudev and the clipboard listener; `.local/bin` supplies the deployed helpers.
+  System `%base-packages` supplies Coreutils (including timeout), awk, grep,
+  findutils and the shell. Elogind's service provides `loginctl`. The privileged
+  i3lock path `/run/privileged/bin/i3lock` is correct at the channel pin and
+  remains required for PAM locking; its absence is logged, not silently
+  replaced by an unprivileged binary.
+- `${XDG_RUNTIME_DIR:?}` in the old exit trap could fail during cleanup.
+  The new script validates ownership/mode, prefers the existing elogind runtime,
+  and otherwise makes a private session-only fallback. It never removes the
+  elogind runtime directory itself or cleans an unvalidated caller-supplied path.
+- This desktop composition uses `%base-services`, omitting the standard
+  `%desktop-services` X socket-directory service. Rootless Xorg can consequently
+  create a user-owned `/tmp/.X11-unix`. Added Guix's root Shepherd service for
+  boot plus activation repair of existing ownership/mode. The standard service
+  alone only creates/chmods, so would not fix a previously user-owned directory.
+  Repair preserves sockets and rejects a symlink instead of following it.
+- No active repository startup command invokes `systemctl` or a systemd user
+  manager. Guix uses Shepherd; standalone elogind intentionally implements the
+  login1 interface and compatibility paths such as `/run/systemd`. Those names
+  in upstream Guix/elogind do not mean systemd runs as init. Nothing switches
+  the workstation to systemd or changes the existing login/power design.
+
+Local validation:
+
+- Reproduced the original script exiting with status 23 before OXWM when a
+  foreground setup command failed, even with the helper available on PATH.
+- Six isolated session regressions passed: setup/background failures, finding
+  OXWM only in the Home profile, nonzero WM exit and helper cleanup, missing or
+  unsafe runtime environment, termination signals, and unwritable logging.
+- In a disposable Xvfb display, the real previously built patched OXWM 0.13.0
+  loaded this repository's Lua configuration, claimed the EWMH WM property,
+  and stayed running alongside real Picom while injected background helpers
+  failed. Session termination cleaned up. DPMS warnings were captured; this
+  host's xset returned zero for them, so the warnings alone are not evidence of
+  the fatal T490 command. This uses local Nix-provided X tools, not Guix Xorg
+  or a physical GPU/VT. No actual lock, suspend or power action was triggered.
+- Complete T490 Home/system evaluation and service graph checks passed against
+  the pinned Guix/Nonguix sources using the local Nix Guile/Guix runtime, including
+  assertions for session packages, executable `.xinitrc` deployment and socket
+  services. The actual socket activation expression passed tests for creation,
+  existing-directory repair without deleting contents, and symlink rejection;
+  only privileged `chown` was intercepted and checked for UID/GID 0.
+- ShellCheck passed for the changed session script and `git diff --check` passed.
+  The time-machine check and OXWM/system/Home builds were attempted but stopped
+  at the missing `/var/guix/daemon-socket/socket`. No daemon-backed Guix build,
+  real root activation, physical T490 session or reboot was performed here.
+
+Applying the socket fix requires one system reconfigure, followed by Home
+reconfigure, console logout/login and `startx` as shown in the README. No reboot
+or further diagnostic commands are required from the user.
+
 ## Latest stable Codex on Home commands, 2026-09-26
 
 The user's follow-up replaces the fixed Home version policy: each

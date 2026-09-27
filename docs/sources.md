@@ -6,6 +6,11 @@ Read-only local references inspected on 2026-09-26:
   <https://github.com/blakepiper/alpinews>. The display, brightness, status,
   screenshot and clipboard helpers and MIT-licensed `clipwatch.c` are copied
   locally so this repository does not require a sibling checkout at build time.
+  The X session now explicitly includes Guix profile paths, logs client output,
+  treats display/helper failures as nonfatal, and waits only for OXWM's lifetime.
+  Transient helper state uses elogind's runtime directory or a private session
+  fallback. Guix's privileged i3lock path and elogind's `loginctl` are retained;
+  there is no systemd user-manager command or dependency in these scripts.
 - Blix `cb7c59f55dd072fae7936ca05b5a3cab088313d4`:
   <https://github.com/blakepiper/blix>. OXWM Lua configuration, microphone keysym
   patch, mirrored-monitor patch, host organization and historical hardware facts.

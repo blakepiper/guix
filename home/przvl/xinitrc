@@ -1,9 +1,92 @@
 #!/bin/sh
-set -eu
-# Keep Guix's profile and service environment; never substitute Alpine's PATH.
-export PATH="$HOME/.local/bin:$PATH"
+# xinit waits for this script. Only OXWM's lifetime controls the X session.
+# Do not use errexit: DPMS/RandR and optional helpers can fail on healthy Xorg.
+set -u
+export PATH="$HOME/.local/bin:$HOME/.guix-home/profile/bin:/run/privileged/bin:$HOME/.guix-profile/bin:/run/current-system/profile/bin${PATH:+:$PATH}"
 export XDG_CURRENT_DESKTOP=OXWM XDG_SESSION_TYPE=x11
 export MOZ_ENABLE_WAYLAND=0
+
+# Keep this session and one previous session, including helper/WM stderr.
+log_dir=${XDG_STATE_HOME:-$HOME/.local/state}/oxwm
+if (umask 077; mkdir -p "$log_dir") && [ -w "$log_dir" ]; then
+    mv -f "$log_dir/session.log" "$log_dir/session.previous.log" 2>/dev/null || :
+    if (umask 077; : > "$log_dir/session.log"); then
+        printf 'OXWM session log: %s/session.log\n' "$log_dir" >&2
+        # `command` prevents an optional redirection error in the special
+        # builtin exec from terminating a noninteractive POSIX shell.
+        command exec >> "$log_dir/session.log" 2>&1 || :
+    fi
+fi
+log() { printf 'session: %s\n' "$*" >&2; }
+log "starting $(date -Is); DISPLAY=${DISPLAY:-unset}"
+log "PATH=$PATH"
+
+pids=''
+runtime=''
+fallback_runtime=''
+# shellcheck disable=SC2329 # Invoked by the EXIT trap.
+cleanup() {
+    status=$?
+    trap - EXIT HUP INT TERM
+    log "stopping session (status $status)"
+    for pid in $pids; do kill "$pid" 2>/dev/null || :; done
+    for pid in $pids; do wait "$pid" 2>/dev/null || :; done
+    # Never require an unset XDG variable in the EXIT trap, or remove the
+    # elogind runtime directory itself. Only delete our own transient state.
+    if [ -n "$runtime" ]; then
+        rm -rf -- "$runtime/alpinews-clipboard"
+        rm -f -- "$runtime/alpinews-cpu"
+    fi
+    [ -z "$fallback_runtime" ] || rm -rf -- "$fallback_runtime"
+    return "$status"
+}
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+uid=$(id -u)
+valid_runtime() {
+    case "$1" in /*) ;; *) return 1 ;; esac
+    [ -d "$1" ] && [ ! -L "$1" ] && [ -w "$1" ] &&
+        [ "$(stat -c %u "$1")" = "$uid" ] && [ "$(stat -c %a "$1")" = 700 ]
+}
+if valid_runtime "${XDG_RUNTIME_DIR:-}"; then
+    runtime=$XDG_RUNTIME_DIR
+elif valid_runtime "/run/user/$uid"; then
+    runtime=/run/user/$uid
+else
+    # Missing PAM/elogind environment must not make a clipboard/bar helper
+    # terminate X. This private fallback is session-only, not a user bus.
+    fallback_runtime=$(mktemp -d "${TMPDIR:-/tmp}/oxwm-runtime.XXXXXX") || fallback_runtime=''
+    runtime=$fallback_runtime
+    log "warning: no usable elogind runtime directory; fallback=${runtime:-unavailable}; log in again for Home services"
+fi
+if [ -n "$runtime" ]; then
+    XDG_RUNTIME_DIR=$runtime
+    export XDG_RUNTIME_DIR
+else
+    unset XDG_RUNTIME_DIR
+fi
+log "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-unset}"
+
+optional() {
+    log "setup: $*"
+    if timeout --kill-after=2 10 "$@"; then :; else
+        status=$?
+        log "warning: $* failed (status $status); continuing"
+    fi
+}
+start_helper() {
+    if command -v "$1" >/dev/null 2>&1; then
+        "$@" &
+        pids="$pids $!"
+        log "helper: $1 (pid $!)"
+    else
+        log "warning: helper $1 is unavailable; skipping"
+    fi
+}
+
 export ALPINEWS_BATTERY=
 for battery in /sys/class/power_supply/BAT*; do
     [ -r "$battery/type" ] || continue
@@ -11,26 +94,32 @@ for battery in /sys/class/power_supply/BAT*; do
     break
 done
 export ALPINEWS_BATTERY
-xsetroot -solid '#1a1b26'
-xset r rate 200 50
-xset s off
-xset +dpms
-xset dpms 0 0 0
-alpinews-monitors
-pids=''
-cleanup() {
-    trap - EXIT
-    for pid in $pids; do kill "$pid" 2>/dev/null || :; done
-    for pid in $pids; do wait "$pid" 2>/dev/null || :; done
-    rm -rf "${XDG_RUNTIME_DIR:?}/alpinews-clipboard"
-    rm -f "$XDG_RUNTIME_DIR/alpinews-cpu"
-}
-trap cleanup EXIT
-trap 'exit 0' HUP INT TERM
-# -n keeps i3lock in the foreground; xss-lock owns elogind's sleep inhibitor.
-xss-lock -- /run/privileged/bin/i3lock -n -c 1a1b26 & pids="$pids $!"
-picom --config "$HOME/.config/picom/picom.conf" & pids="$pids $!"
-alpinews-hotplug & pids="$pids $!"
-alpinews-clipwatch & pids="$pids $!"
+optional xsetroot -solid '#1a1b26'
+optional xset r rate 200 50
+optional xset s off
+optional xset +dpms
+optional xset dpms 0 0 0
+optional alpinews-monitors
+
+# This is Guix's privileged-program directory, not an Alpine/Nix path.
+# Never substitute an unprivileged i3lock: its PAM authentication needs this.
+if [ -x /run/privileged/bin/i3lock ]; then
+    start_helper xss-lock -- /run/privileged/bin/i3lock -n -c 1a1b26
+else
+    log 'warning: /run/privileged/bin/i3lock missing; screen locking is unavailable (system reconfigure required)'
+fi
+start_helper picom --config "${XDG_CONFIG_HOME:-$HOME/.config}/picom/picom.conf"
+if [ -n "$runtime" ]; then
+    start_helper alpinews-hotplug
+    start_helper alpinews-clipwatch
+fi
+
+if ! command -v oxwm >/dev/null 2>&1; then
+    log 'fatal: oxwm is missing from the Home profile/PATH'
+    exit 127
+fi
+log "window manager: $(command -v oxwm)"
 oxwm & wm=$!; pids="$pids $wm"
-wait "$wm"
+if wait "$wm"; then status=0; else status=$?; fi
+log "OXWM exited (status $status)"
+exit "$status"
