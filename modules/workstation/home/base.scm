@@ -71,6 +71,7 @@
       `(("oxwm/config.lua" ,(repository-file "home/przvl/config/oxwm/config.lua"))
         ("alpinews/display.conf" ,(plain-file "display.conf" display-config))
         ("picom/picom.conf" ,(repository-file "home/przvl/config/picom.conf"))
+        ("gammastep/config.ini" ,(repository-file "home/przvl/config/gammastep/config.ini"))
         ("mimeapps.list"
          ,(plain-file "mimeapps.list"
                       "[Default Applications]\nx-scheme-handler/http=firefox.desktop\nx-scheme-handler/https=firefox.desktop\ntext/html=firefox.desktop\n")))))))))

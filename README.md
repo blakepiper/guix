@@ -168,6 +168,8 @@ with `Super+Shift+Q`, then run `startx` again. No system reconfigure is needed
 for this terminal fix.
 
 Home includes `gammastep` for manual screen color-temperature adjustment.
+Its default adjustment method is RandR for X11. Use `gammastep -O 2500`
+to set a warm temperature and `gammastep -x` to reset it.
 Home also provides `ssh-keygen` and the other OpenSSH tools, plus `fastfetch`
 from Guix's lightweight `fastfetch-minimal` package. Run `fastfetch` whenever
 you want a system summary; it does not run automatically at shell startup.
