@@ -294,3 +294,14 @@ that environment setting through the shared Home constructor. No gesture
 daemon, external script, copied code or sibling dependency is introduced.
 The live touchpad already has two-finger and horizontal scrolling enabled;
 the running Firefox process lacked the XI2 environment setting.
+
+## Lock-before-sleep handoff, 2026-09-28
+
+The session uses xss-lock's `--transfer-sleep-lock` with the existing pinned
+i3lock 2.13. `home/przvl/bin/workstation-lock-screen` is an original helper that
+logs the launch and execs Guix's privileged i3lock without retaining an extra
+inhibitor descriptor. The handoff follows upstream i3lock's documented xss-lock
+invocation and its MapNotify readiness handling:
+https://github.com/i3/i3lock/blob/2.13/i3lock.c
+https://github.com/i3/i3lock/blob/2.13/i3lock.1
+No external source was copied and no package/channel pin was changed.

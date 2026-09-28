@@ -72,7 +72,7 @@
                     ;; single file; flat local-file imports become mode 0444.
                     (repository-file (string-append "home/przvl/bin/" name)
                                      #:recursive? #t)))
-            '("workstation-lock" "control-menu" "alpinews-monitors"
+            '("workstation-lock" "workstation-lock-screen" "control-menu" "alpinews-monitors"
               "alpinews-hotplug" "alpinews-keyboards" "alpinews-pointers" "alpinews-brightness" "oxwm-cpu" "oxwm-battery"
               "screenshot-region" "clipboard-history"))))
      (simple-service

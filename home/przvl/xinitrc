@@ -106,7 +106,8 @@ optional alpinews-pointers
 # This is Guix's privileged-program directory, not an Alpine/Nix path.
 # Never substitute an unprivileged i3lock: its PAM authentication needs this.
 if [ -x /run/privileged/bin/i3lock ]; then
-    start_helper xss-lock -- /run/privileged/bin/i3lock -n -c 1a1b26
+    # i3lock closes the transferred inhibitor only after mapping its lock window.
+    start_helper xss-lock --transfer-sleep-lock -- workstation-lock-screen
 else
     log 'warning: /run/privileged/bin/i3lock missing; screen locking is unavailable (system reconfigure required)'
 fi

@@ -208,3 +208,37 @@ system update) so the X session and newly started Firefox inherit the setting.
 For a test in the existing session, fully quit Firefox and launch it with
 `MOZ_USE_XINPUT2=1 firefox`. Opening another window while Firefox is already
 running will reuse the old process and its environment.
+
+## Lid-close locking and resume diagnosis
+
+Elogind suspends on an undocked lid close. The X session starts xss-lock with
+`--transfer-sleep-lock`: i3lock holds the delay inhibitor until its lock window
+is mapped. The original command released the inhibitor on process launch,
+allowing sleep to race the locker. Elogind's five-second inhibitor limit still
+applies; this handshake cannot guarantee locking if X or the locker is stuck.
+
+The `workstation-lock-screen` helper logs timestamped launches and whether they
+came from sleep or a session lock to `~/.local/state/oxwm/session.log`. It execs
+`/run/privileged/bin/i3lock` so the privileged PAM path and inhibitor ownership
+are preserved. Home reconfiguration installs the change; restart the X session
+after saving work to replace the already-running xss-lock process.
+
+On 2026-09-28, the saved log showed suspend at 09:33:11, resume at 13:57:22,
+and an orderly power-button shutdown at 13:58:21. The machine remained responsive
+below the desktop. Three xss-lock inhibitor timeouts were recorded, but the
+available logs do not identify the cause of those timeouts or the frozen desktop.
+No GPU hang was recorded during that resume. Do not treat the readiness fix as
+proof that the physical resume problem is resolved.
+
+After restarting X, first test `workstation-lock` and unlock normally. Then test
+an undocked lid close/resume with work saved. If the desktop freezes, try
+Ctrl+Alt+F2 and log in on the console. Before shutting down, capture:
+
+```sh
+ps -eo pid,ppid,stat,wchan:30,args > ~/zen-frozen-processes.log
+sudo cat /var/log/messages > ~/zen-frozen-messages.log
+cp ~/.local/state/oxwm/session.log ~/zen-frozen-session.log
+cp ~/.local/share/xorg/Xorg.0.log ~/zen-frozen-xorg.log
+```
+
+These preserve the locker/compositor state and sleep timeline for diagnosis.

@@ -1,0 +1,12 @@
+#!/bin/sh
+# xss-lock owns this process. Exec preserves its sleep inhibitor for i3lock to
+# release after mapping the lock window; an intermediate waiting shell must not
+# retain another copy. Authentication must use Guix's privileged i3lock.
+set -eu
+if [ -n "${XSS_SLEEP_LOCK_FD:-}" ]; then
+    reason='sleep'
+else
+    reason=session
+fi
+printf 'screen-lock: %s launching i3lock (reason=%s)\n' "$(date -Is)" "$reason" >&2
+exec /run/privileged/bin/i3lock -n -c 1a1b26

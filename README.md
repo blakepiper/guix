@@ -320,6 +320,14 @@ modules. Evaluation is not a build or boot test; the dated
 [validation record](docs/validation.md) distinguishes checks, builds and remaining
 hardware verification.
 
+On Guix System with the Home tools and privileged i3lock installed, test locking
+on a private X server and private D-Bus without locking or suspending the desktop:
+
+```sh
+./scripts/guix shell python python-dbus python-pygobject glib xorg-server dbus xwininfo -- \
+  python3 scripts/check-screen-lock.py
+```
+
 ## Troubleshooting and reference
 
 | Need | Where to look |

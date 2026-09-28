@@ -633,3 +633,27 @@ ENOENT and `sof_sdw` remained deferred; Intel SOF itself booted successfully.
   a new session (or fully quitting Firefox and launching with the variable).
 - `git diff --check` passed. No shell scripts or system configuration changed
   in this gesture change, so additional ShellCheck/system builds do not apply.
+
+## Lock readiness handoff, 2026-09-28
+
+Investigated Zen's saved system and previous X session logs. Elogind recorded
+three five-second xss-lock delay-inhibitor timeouts. The last sleep entered
+s2idle and returned; the power key subsequently initiated orderly shutdown.
+The logs do not establish why the graphical session stopped responding.
+
+Added explicit sleep-inhibitor transfer to i3lock plus an exec-only helper with
+timestamped launch logging. A private Xvfb/private D-Bus integration test uses
+the real installed xss-lock and privileged i3lock. With a 400 ms delay before
+locker startup, the previous command fails the assertion that sleep stays
+inhibited until locking is ready. The revised command passes that assertion,
+three consecutive sleep/resume notifications, manual locking, and sleep while
+already locked. The test never suspends the machine or accesses the live X
+server. A separate isolated probe with OXWM and Picom also mapped i3lock and
+released the inhibitor with both old and new commands; it did not reproduce
+the original timeout or freeze.
+
+Repository Scheme checks, eight X session tests, ShellCheck for the changed
+shell scripts, Zen system build, and both hosts' Home builds passed. The Home
+builds used the wrapper's live Firefox/Codex resolution. No package recipe was
+changed. Physical lid-close/resume and password authentication remain to be
+tested; these checks are not a boot or physical resume test.
