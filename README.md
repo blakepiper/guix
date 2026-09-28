@@ -118,11 +118,37 @@ this repository. A separate `guix pull` updates your user's Guix; it does not
 change the wrapper's pins. `guix upgrade` updates an imperative package profile,
 not the declared system or Home environment.
 
-To update the OS and channel packages to newer available versions, advance the
-commits in `channels.scm`, preserve authenticated channel introductions, run the
-checks and both hosts' builds below, and commit the new pins. Then reconfigure
-each host. Local source recipes need their own version/hash updates. This is
-comparable to updating Nix inputs in a lockfile before rebuilding and switching.
+### Refresh the channel pins
+
+To select newer OS and channel package versions, run as your normal user:
+
+```sh
+cd ~/guix
+./scripts/update
+git diff -- channels.scm
+```
+
+This is the equivalent of refreshing Nix inputs in a lockfile. It fetches the
+latest revisions on the channels' configured branches, authenticates them using
+the existing introductions, and rejects backward or divergent updates. URLs,
+branches and trust anchors are preserved; new channel dependencies require
+manual review.
+
+The command evaluates both hosts with the candidate revisions before replacing
+`channels.scm`. Fetch, authentication or evaluation failures leave the existing
+pins untouched. It also refuses to overwrite the file if it changed while the
+update ran. An already-current update leaves the file byte-for-byte unchanged.
+
+Network access is required, and Guix may download or build its updated tooling.
+The checks use the offline Firefox/Codex records; they do not refresh those
+applications or build either host's system/Home environment. Your personal Guix
+profile and running generations are unchanged. Nothing is committed or pushed.
+
+After reviewing the diff, run [both hosts' builds](#checks-and-builds), commit
+and push the pins, then use the host-specific update/switch commands above.
+Evaluation alone does not establish that a new revision builds or boots.
+Local source recipes still need their own version/hash updates; Firefox and
+Codex retain their independent Home update policies.
 
 ### Rollback
 
@@ -220,6 +246,8 @@ From the repository root, evaluate both hosts and exercise the wrapper:
 ```sh
 ./scripts/guix repl -L modules scripts/check.scm
 ./scripts/check-guix-wrapper.sh
+./scripts/check-update.sh
+./scripts/guix repl scripts/check-update-channels.scm
 git diff --check
 ```
 
@@ -278,7 +306,7 @@ directory.
 | `modules/workstation/home/` | Shared applications and user services |
 | `modules/workstation/packages/` | Local package recipes and adaptations |
 | `home/przvl/` | Desktop configuration and session helpers |
-| `scripts/` | Pinned Guix wrapper, release resolvers and checks |
+| `scripts/` | Pinned Guix wrapper, channel updater, release resolvers and checks |
 | `sources/` | Release reference records, signing key, patches and copied inputs |
 | `docs/` | Host guides, troubleshooting, provenance and validation |
 

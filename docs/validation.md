@@ -1,5 +1,36 @@
 # Validation
 
+## Channel update command, 2026-09-27
+
+- `./scripts/update` was exercised in a disposable copy of this repository.
+  Guix authenticated the branch update from
+  `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656` to
+  `5d318f0458bf28b63e2703b03262c7b387e2ebad`; Nonguix remained at
+  `2a16e08d40b913e593c7c9ea29bc82b96f117e24`. Both hosts passed evaluation
+  before the candidate file replaced the disposable copy's pins.
+- Both system builds passed using that candidate: T490 produced
+  `/gnu/store/q09i09vzsa2fp2hfah0lxaq0a2ic6r6m-system` and Zen produced
+  `/gnu/store/7affvd1ap35zh0wzr84cijx48ryj3nzm-system`.
+- Both Home builds passed through `scripts/guix`, including signed cached
+  Firefox fetching and the independent stable Codex resolver. T490 produced
+  `/gnu/store/45397ikn185di4x1y8107rw71ki0cyq0-home`; Zen produced
+  `/gnu/store/53ry1xcc7qgpaf6qravnymi7mh013y30-home`.
+- `./scripts/guix repl -L modules scripts/check.scm` passed at the original
+  pins. The existing wrapper regressions also passed.
+- `scripts/check-update.sh` passed: successful publication, unchanged pins,
+  resolver/check failures, SIGTERM cleanup, concurrent user edits, paths with
+  spaces, and isolation from inherited application release-record variables.
+- `scripts/check-update-channels.scm` passed all 13 offline assertions,
+  covering serialization, preserved channel metadata, unchanged file contents,
+  authentication failure, backward updates, unexpected dependencies and missing
+  trust anchors/pins. These tests mock fetching; the live run above exercised
+  Guix's actual authentication implementation.
+- ShellCheck passed for both new shell scripts; `git diff --check` passed.
+
+The repository's channel pins and all active profiles were left unchanged.
+These are build results, not boot or hardware tests. The update command itself
+performs evaluation only; the four host builds were additional validation.
+
 ## NetworkManager resolver ownership, 2026-09-27
 
 - The repo and pinned Guix services contain no placeholder resolver declaration.

@@ -1,0 +1,59 @@
+#!/bin/sh
+# Refresh repository channel pins without activating a profile or either host.
+set -eu
+case "${1-}" in
+  -h|--help)
+    echo 'Usage: ./scripts/update'
+    echo 'Refresh authenticated channel pins and evaluate both hosts before saving.'
+    echo 'Does not build host systems, activate, commit, or push.'
+    exit 0
+    ;;
+esac
+if [ "$#" -ne 0 ]; then
+  echo 'Usage: ./scripts/update' >&2
+  exit 2
+fi
+
+root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$root"
+# Keep the candidate on the same filesystem for an atomic final rename.
+work=$(mktemp -d "$root/.channel-update.XXXXXX")
+cleanup() {
+  status=$?
+  trap - EXIT
+  rm -rf -- "$work"
+  if [ "$status" -ne 0 ]; then
+    echo 'Channel update failed; this command has not replaced channels.scm.' >&2
+  fi
+  exit "$status"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+cp -p channels.scm "$work/previous.scm"
+cp -p channels.scm "$work/candidate.scm"
+# The host checks use the checked-in offline application records. Actual Home
+# builds still use scripts/guix and its independent Firefox/Codex resolvers.
+unset GUIX_CODEX_RELEASE_FILE GUIX_FIREFOX_RELEASE_FILE
+echo 'Resolving authenticated channel updates...'
+guix time-machine -C "$work/previous.scm" -- \
+  repl -q -- "$root/scripts/update-channels.scm" \
+  "$work/previous.scm" "$work/candidate.scm"
+
+echo 'Checking both hosts with the candidate channels...'
+guix time-machine -C "$work/candidate.scm" -- \
+  repl -q -L "$root/modules" "$root/scripts/check.scm"
+
+# Do not overwrite a user's edit or another updater's completed result.
+if ! cmp -s channels.scm "$work/previous.scm"; then
+  echo 'channels.scm changed during the update; leaving that change untouched.' >&2
+  exit 1
+fi
+if cmp -s "$work/previous.scm" "$work/candidate.scm"; then
+  echo 'Channels are already current; both hosts passed evaluation.'
+else
+  mv -- "$work/candidate.scm" channels.scm
+  echo 'Updated channels.scm; both hosts passed evaluation.'
+fi
+echo 'Review git diff -- channels.scm, then build and reconfigure when ready.'
