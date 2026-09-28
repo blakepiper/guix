@@ -1,12 +1,18 @@
-;; Guix's isolated channel loader provides the channel bindings directly.
+;; Authenticated channel pins; refresh with ./scripts/update.
 (list (channel
-       (inherit (car %default-channels))
+       (name 'guix)
        (url "https://codeberg.org/guix/guix.git")
-       (commit "fb556d47e9dfbd246d748f3fc6d7cf9edba6c656"))
-      ;; Available to all hosts; hosts explicitly opt into its kernel/firmware.
+       (branch "master")
+       (commit "5d318f0458bf28b63e2703b03262c7b387e2ebad")
+       (introduction
+        (make-channel-introduction
+         "9edb3f66fd807b096b48283debdcddccfea34bad"
+         (openpgp-fingerprint
+          "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))
       (channel
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
+       (branch "master")
        (commit "2a16e08d40b913e593c7c9ea29bc82b96f117e24")
        (introduction
         (make-channel-introduction
