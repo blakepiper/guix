@@ -105,6 +105,10 @@ does not package StyLua. `nvimide` preserves directory selection, argument
 forwarding, and `BLIX_NVIMIDE=1`, expressed in POSIX shell. Editor dependencies
 and installation are isolated in `modules/workstation/home/editor.scm`.
 
+The shared profile includes `tree-sitter-bash`: Guix Neovim discovers grammars
+through `TREE_SITTER_GRAMMAR_PATH`, rather than nvim-treesitter's downloaded
+`site/parser/bash.so`. Both hosts receive the Bash grammar through Guix Home.
+
 Blix's pinned nvim-treesitter requires Tree-sitter CLI 0.26.1 or newer; the
 official channel currently provides 0.25.3. The local editor package builds
 upstream `tree-sitter/tree-sitter` tag `v0.26.1` with SHA-256
