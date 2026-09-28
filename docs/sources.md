@@ -265,3 +265,22 @@ changes, including mirror, standalone and preferred-mode fallback paths.
 Previously only session startup painted the wallpaper, leaving an oversized
 root pixmap after reducing resolution or undocking. The original image and
 aspect-preserving fill mode are retained; no image asset was edited.
+
+## Zen Cirrus audio firmware, 2026-09-27
+
+Live PCI/sysfs reports ASUS UX5406SA, audio subsystem 1043:1e13, one CS42L43
+codec and four CS35L56 SoundWire amplifiers. The user supplied kernel logs
+showing `cs42l43.bin` failing with ENOENT while SOF 2.14.1.1 boots successfully.
+
+`zen-audio-firmware` in `modules/workstation/packages/firmware.scm` inherits
+linux-firmware 20260916 from authenticated Nonguix commit
+`2a16e08d40b913e593c7c9ea29bc82b96f117e24`, retaining its source checksum
+and compressed installer. Its WHENCE selection keeps `cs42l43.bin`, the four
+`cirrus/cs35l56-b0-dsp1-misc-10431e13-ampN.bin` files, their upstream firmware
+symlink and its `cirrus/cs35l56/CS35L56_Rev3.11.16.wmfw` target. It installs
+LICENSE.cirrus. No sibling repository or other model's tuning is used.
+
+The [upstream Cirrus driver documentation](https://docs.kernel.org/sound/codecs/cs35l56.html)
+explains subsystem-specific amplifier tuning and required WHENCE symlinks.
+The user approved this additional nonfree firmware exception for Zen only.
+Shared free defaults, T490, kernel/channel pins and Intel SOF remain unchanged.

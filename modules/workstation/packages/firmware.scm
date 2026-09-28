@@ -2,6 +2,7 @@
   #:use-module (guix packages)
   #:use-module (guix gexp)
   #:use-module (guix utils)
+  #:use-module ((nonguix licenses) #:prefix nonguix:)
   #:use-module (nongnu packages linux))
 
 ;; The pinned Nonguix i915-firmware recipe omits xe/.  Retain its source,
@@ -55,3 +56,57 @@
     (description "Intel graphics firmware, including Lunar Lake GuC, HuC and
 DMC files.  Only the i915 and xe firmware directories are installed; AMD and
 NVIDIA firmware are excluded.")))
+
+;; Exact WHENCE subset for Zen's CS42L43 and subsystem 1043:1e13 amps.
+;; Keep the pinned source, checksum and upstream compressed installer.
+(define-public zen-audio-firmware
+  (package
+    (inherit linux-firmware)
+    (name "zen-audio-firmware")
+    (arguments
+     (substitute-keyword-arguments (package-arguments linux-firmware)
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (add-after 'unpack 'select-zen-audio
+              (lambda _
+                (define files
+                  '("cs42l43.bin"
+                    "cirrus/cs35l56/CS35L56_Rev3.11.16.wmfw"
+                    "cirrus/cs35l56-b0-dsp1-misc-10431e13-amp1.bin"
+                    "cirrus/cs35l56-b0-dsp1-misc-10431e13-amp2.bin"
+                    "cirrus/cs35l56-b0-dsp1-misc-10431e13-amp3.bin"
+                    "cirrus/cs35l56-b0-dsp1-misc-10431e13-amp4.bin"))
+                (substitute* "WHENCE"
+                  (("^(File|RawFile): *([^ ]*)(.*)" _ type file rest)
+                   (string-append (if (member (string-trim-right file) files)
+                                      type "Skip")
+                                  ": " file rest))
+                  (("^Link: *(.*) *-> *(.*)" _ file target)
+                   (string-append
+                    (if (string=? (string-trim-right file)
+                                  "cirrus/cs35l56-b0-dsp1-misc-10431e13.wmfw")
+                        "Link" "Skip")
+                    ": " file " -> " target)))))
+            (add-after 'install 'check-zen-audio
+              (lambda* (#:key outputs #:allow-other-keys)
+                (let* ((out (assoc-ref outputs "out"))
+                       (firmware (string-append out "/lib/firmware/")))
+                  (install-file "LICENSES/LICENSE.cirrus"
+                                (string-append out "/share/doc/zen-audio-firmware"))
+                  (for-each
+                   (lambda (file)
+                     (unless (file-exists? (string-append firmware file))
+                       (error "Missing Zen audio firmware" file)))
+                   '("cs42l43.bin.zst"
+                     "cirrus/cs35l56/CS35L56_Rev3.11.16.wmfw.zst"
+                     "cirrus/cs35l56-b0-dsp1-misc-10431e13.wmfw.zst"
+                     "cirrus/cs35l56-b0-dsp1-misc-10431e13-amp1.bin.zst"
+                     "cirrus/cs35l56-b0-dsp1-misc-10431e13-amp2.bin.zst"
+                     "cirrus/cs35l56-b0-dsp1-misc-10431e13-amp3.bin.zst"
+                     "cirrus/cs35l56-b0-dsp1-misc-10431e13-amp4.bin.zst")))))))))
+    (synopsis "Cirrus audio firmware for ASUS Zenbook S 14 UX5406SA")
+    (description "Firmware for Zen's CS42L43 codec and four CS35L56 amplifiers.
+Only the amplifier tuning for PCI subsystem 1043:1e13 and its matching DSP
+image are included, with the upstream firmware symlink preserved.")
+    (license (nonguix:nonfree
+              "https://gitlab.com/kernel-firmware/linux-firmware/-/blob/20260916/LICENSES/LICENSE.cirrus"))))

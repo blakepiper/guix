@@ -72,6 +72,7 @@ Linux-libre/free firmware defaults are unchanged. Zen explicitly selects:
 | Nonguix `iwlwifi-firmware` | Intel wireless firmware; exact adapter/loaded blob to verify |
 | `intel-graphics-firmware` | Intel `i915/` and `xe/` firmware from pinned linux-firmware 20260916 |
 | Nonguix `sof-firmware` (2025.12.2) | Intel signed audio DSP firmware and topology, including IPC4 |
+| `zen-audio-firmware` | Cirrus CS42L43 codec and CS35L56 amplifier firmware for subsystem 1043:1e13 |
 | `%base-firmware` | Same free base firmware as the shared default |
 
 The [Linux Xe firmware table](https://linux.googlesource.com/linux/kernel/git/torvalds/linux/+/2b414a95b8f7307d42173ba9e580d6d3e2bcbfce/drivers/gpu/drm/xe/xe_uc_fw.c)
@@ -85,9 +86,13 @@ unnecessary for these known devices and would include unwanted vendors.
 
 [SOF lists Lunar Lake's ACE 2.0 DSP and IPC4 support](https://thesofproject.github.io/latest/platforms/index.html).
 The pinned SOF recipe installs Intel firmware/topology directories only. This
-is the initial audio choice; speaker, headset and microphone routing must be
-tested on the actual laptop. No guessed codec/amplifier firmware or quirks are
-added. Intel Bluetooth firmware and CPU microcode are not added speculatively;
+boots successfully on Zen, but the first audio diagnosis found no ALSA card:
+`cs42l43.bin` was missing and `sof_sdw` remained deferred. Zen now also selects
+`zen-audio-firmware` from the same pinned linux-firmware source, including the
+CS42L43 image and only the CS35L56 tuning for its verified subsystem 1043:1e13.
+The user explicitly authorized this Cirrus exception. Speaker, headset and
+microphone operation must be checked after activation and a fresh boot.
+Intel Bluetooth firmware and CPU microcode are not added speculatively;
 Bluetooth can be addressed after USB IDs and missing-firmware logs are known.
 No hibernation/resume configuration or swap sizing policy is introduced.
 

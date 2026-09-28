@@ -15,7 +15,8 @@
     (kernel nongnu:linux)
     (firmware (append (list nongnu:iwlwifi-firmware
                             intel-graphics-firmware
-                            nongnu:sof-firmware)
+                            nongnu:sof-firmware
+                            zen-audio-firmware)
                       %base-firmware))
     (kernel-loadable-modules '())
     (file-systems file-systems)

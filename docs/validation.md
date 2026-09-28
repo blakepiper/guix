@@ -563,3 +563,24 @@ Applied `setxkbmap` to the built-in device only and inspected its actual XKB map
 with `xkbcomp`: LALT/RALT map to Alt_L/Alt_R and LWIN/RWIN to Super_L/Super_R.
 The external keyboard was disconnected, so simultaneous-device behavior and
 a fresh X session still need hardware verification after system reconfigure.
+
+## Zen missing Cirrus audio firmware, 2026-09-27
+
+On Zen, PipeWire and WirePlumber were running but `/proc/asound/cards` had no
+cards. PCI/sysfs identified the CS42L43 and four CS35L56 SoundWire devices with
+subsystem 1043:1e13. User-supplied dmesg confirmed `cs42l43.bin` failed with
+ENOENT and `sof_sdw` remained deferred; Intel SOF itself booted successfully.
+
+- The new `zen-audio-firmware` package build passed. Its firmware output contains
+  exactly six payload files and the matching upstream amplifier symlink; the
+  symlink resolves, all four amplifier tuning files match 10431e13, and the
+  Cirrus license is installed.
+- `./scripts/guix repl -L modules scripts/check.scm` passed, including updated
+  Zen firmware assertions and unchanged T490/shared free defaults.
+- `./scripts/guix system build -L modules hosts/zen/system.scm` passed, producing
+  `/gnu/store/858bs7n6i1kvjcxkbb1jda0znr6jajx0-system`.
+- `git diff --check` passed. No Home configuration or shell scripts changed;
+  Home builds and ShellCheck are not relevant to this system-firmware change.
+- System activation requires the user's sudo authentication. No activation,
+  reboot or audible playback test was performed by the agent. The build fixes
+  the confirmed missing-firmware condition; live audio verification is pending.

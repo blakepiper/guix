@@ -176,7 +176,8 @@
              (equal? (operating-system-firmware zen-system)
                      (append (list nongnu:iwlwifi-firmware
                                    (@ (workstation packages firmware) intel-graphics-firmware)
-                                   nongnu:sof-firmware)
+                                   nongnu:sof-firmware
+                                   (@ (workstation packages firmware) zen-audio-firmware))
                              %base-firmware)))
   (error "Unexpected Zen kernel/firmware exception"))
 (define (service-names os)

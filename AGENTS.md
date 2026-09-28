@@ -6,7 +6,8 @@
 - Keep Linux-libre and free firmware as the shared defaults. The user authorized
   explicit host exceptions from the pinned, authenticated Nonguix channel:
   T490 uses standard Linux and iwlwifi-firmware; Zen uses standard Linux,
-  iwlwifi-firmware, Intel i915/Xe graphics firmware and Intel SOF audio firmware.
+  iwlwifi-firmware, Intel i915/Xe graphics firmware, Intel SOF audio firmware,
+  and Cirrus CS42L43/CS35L56 audio firmware for its subsystem 1043:1e13.
   Keep these choices host-specific; do not add AMD/NVIDIA firmware, expand to
   other hosts/nonfree packages, or introduce other prebuilt application binaries.
 - Keep OXWM as a pinned source build. Codex is the user-authorized exception:
