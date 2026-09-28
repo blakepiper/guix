@@ -42,6 +42,10 @@ linux-firmware bundle, CPU microcode or Intel Bluetooth firmware.
 
 ## Update and switch
 
+The full update sequence is **refresh pins → reconfigure system and Home →
+reboot when needed → share the pins with the other laptop**. If
+`./scripts/update` has already succeeded, continue at step 2.
+
 Run commands from the checkout on the host being updated. Use `sudo` for system
 reconfiguration and your normal `przvl` account for Home. **Always use
 `./scripts/guix`**: it selects this repository's channels and resolves Firefox
@@ -59,44 +63,109 @@ This trusts the key for substitutes generally, not just Firefox. Substitute
 signatures and channel source authentication are separate. The wrapper supplies
 the Firefox cache URL even before the first system reconfiguration.
 
-### T490
+### 1. Refresh the channel pins
+
+Run as your normal user, starting from a checkout with any previous local work
+saved before pulling:
+
+```sh
+cd ~/guix && \
+  git pull --ff-only && \
+  ./scripts/update
+```
+
+After it succeeds, review the selected revisions:
+
+```sh
+git diff -- channels.scm
+```
+
+`./scripts/update` fetches the latest revisions on the configured Guix/Nonguix
+branches, authenticates them, and evaluates both hosts before saving the pins
+in `channels.scm`. Fetch, authentication or evaluation failures preserve the
+existing pins. It rejects backward or divergent updates and unexpected channel
+metadata/dependencies, and refuses to overwrite a concurrent edit to the file.
+If the pins are already current, their file contents stay unchanged.
+
+This step needs network access and may download or build Guix's tooling, but
+it **does not switch the running system or Home environment**. Its evaluation
+uses the offline Firefox/Codex records. It does not build either host's complete
+environment, update your personal Guix profile, commit, or push.
+
+### 2. Build and switch system and Home
+
+Once the refresh succeeds, run the pair of commands for the laptop you are on.
+There is no need to run `./scripts/update` again before switching.
+
+#### T490
 
 On the installed T490:
 
 ```sh
 cd ~/guix && \
-  git pull --ff-only && \
   sudo ./scripts/guix system reconfigure -L modules hosts/t490/system.scm && \
   ./scripts/guix home reconfigure -L modules hosts/t490/home.scm
 ```
 
-### Zen
+#### Zen
 
 On the installed Zenbook:
 
 ```sh
 cd ~/guix && \
-  git pull --ff-only && \
   sudo ./scripts/guix system reconfigure -L modules hosts/zen/system.scm && \
   ./scripts/guix home reconfigure -L modules hosts/zen/home.scm
 ```
 
-### What these commands do
-
 `system reconfigure` builds and activates the declared OS and selects the new
 boot generation. `home reconfigure` builds and activates user applications,
-configuration and services. For a Home-only change, run just your host's Home
-command. To build without activating, replace `reconfigure` with `build` and
-omit `sudo`.
+configuration and services, including freshly resolved Firefox and Codex.
+**Both are needed for a full workstation update.** For a Home-only change, run
+just your host's Home command, without `sudo`.
+
+A separate build step is optional: each reconfigure builds its environment
+before activating it. To inspect a build before switching, replace
+`reconfigure` with `build` and omit `sudo`, then run reconfigure when ready.
+Home reconfigure resolves Firefox/Codex again, so their releases may have
+advanced since a previous Home build.
 
 The command chains stop on failure. System and Home are separate generations:
 if Home fails after the system succeeds, the system change remains applied.
 Fix the reported error and rerun the Home command.
 
-Reboot with `sudo reboot` when ready to load a changed kernel and boot-time
-firmware. For session changes, exit OXWM, log out of the console, log back in
-and run `startx`. Restart applications to use their updated versions. The
-update commands do not reboot automatically.
+### 3. Restart into the updated environment
+
+After both reconfigurations succeed, reboot when ready to load a changed kernel
+and boot-time firmware and start a fresh session:
+
+```sh
+sudo reboot
+```
+
+After boot, log in as `przvl` and run `startx`. For Home/session changes alone,
+you can instead exit OXWM, log out of the console, log back in and run `startx`.
+Restart applications to use their updated versions. None of the update commands
+reboots automatically.
+
+### 4. Share the pins with the other laptop
+
+The refreshed `channels.scm` is a local working-tree change until you commit
+and push it. After reviewing the diff and validating the update, record it:
+
+```sh
+git add channels.scm
+git commit -m "Update Guix and Nonguix channel pins"
+git push
+```
+
+Skip that commit if there is no pin change. Before sharing new pins, use the
+[build commands](#checks-and-builds) to check both hosts; evaluation alone does
+not establish that either host builds or boots.
+
+On the other laptop, run `git pull --ff-only` from `~/guix`, then follow steps 2
+and 3 for that host. **Skip `./scripts/update` there to use the same shared
+channel revisions**; running it again may select newer ones. Firefox and Codex
+still resolve independently at each Home build/reconfigure.
 
 ### Which versions get installed?
 
@@ -118,37 +187,9 @@ this repository. A separate `guix pull` updates your user's Guix; it does not
 change the wrapper's pins. `guix upgrade` updates an imperative package profile,
 not the declared system or Home environment.
 
-### Refresh the channel pins
-
-To select newer OS and channel package versions, run as your normal user:
-
-```sh
-cd ~/guix
-./scripts/update
-git diff -- channels.scm
-```
-
-This is the equivalent of refreshing Nix inputs in a lockfile. It fetches the
-latest revisions on the channels' configured branches, authenticates them using
-the existing introductions, and rejects backward or divergent updates. URLs,
-branches and trust anchors are preserved; new channel dependencies require
-manual review.
-
-The command evaluates both hosts with the candidate revisions before replacing
-`channels.scm`. Fetch, authentication or evaluation failures leave the existing
-pins untouched. It also refuses to overwrite the file if it changed while the
-update ran. An already-current update leaves the file byte-for-byte unchanged.
-
-Network access is required, and Guix may download or build its updated tooling.
-The checks use the offline Firefox/Codex records; they do not refresh those
-applications or build either host's system/Home environment. Your personal Guix
-profile and running generations are unchanged. Nothing is committed or pushed.
-
-After reviewing the diff, run [both hosts' builds](#checks-and-builds), commit
-and push the pins, then use the host-specific update/switch commands above.
-Evaluation alone does not establish that a new revision builds or boots.
-Local source recipes still need their own version/hash updates; Firefox and
-Codex retain their independent Home update policies.
+Refreshing the channel pins is comparable to updating Nix inputs in a lockfile
+before rebuilding and switching. Local source recipes still need their own
+version/hash updates.
 
 ### Rollback
 
