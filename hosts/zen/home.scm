@@ -4,6 +4,7 @@
 (make-workstation-home
  #:bar-font "DejaVu Sans Mono:size=14"
  #:firefox-scale "1.25"
+ #:firefox-touchpad-gestures? #t
  #:pointer-config "ALPINEWS_NATURAL_SCROLL_USB_ID='1133, 49291'
 ALPINEWS_NATURAL_SCROLL_TOUCHPAD_ID='10248, 536'
 ALPINEWS_TOUCHPAD_TWO_FINGER_CLICK=1

@@ -284,3 +284,13 @@ The [upstream Cirrus driver documentation](https://docs.kernel.org/sound/codecs/
 explains subsystem-specific amplifier tuning and required WHENCE symlinks.
 The user approved this additional nonfree firmware exception for Zen only.
 Shared free defaults, T490, kernel/channel pins and Intel SOF remain unchanged.
+
+## Zen Firefox touchpad gestures, 2026-09-27
+
+Mozilla's [GTK history-swipe implementation](https://bugzilla.mozilla.org/show_bug.cgi?id=1539730)
+and [X11 gesture discussion](https://bugzilla.mozilla.org/show_bug.cgi?id=1980781)
+document `MOZ_USE_XINPUT2=1` for native X11 touchpad gestures. Zen opts into
+that environment setting through the shared Home constructor. No gesture
+daemon, external script, copied code or sibling dependency is introduced.
+The live touchpad already has two-finger and horizontal scrolling enabled;
+the running Firefox process lacked the XI2 environment setting.

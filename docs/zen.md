@@ -194,3 +194,17 @@ T490 needs no system reconfiguration for the Zen addition. To install the shared
 monitor helper change on T490, run
 `./scripts/guix home reconfigure -L modules hosts/t490/home.scm`, then exit X,
 log out/back in and run `startx`; its display policy is unchanged.
+
+## Firefox touchpad gestures
+
+Zen's Home environment exports `MOZ_USE_XINPUT2=1` for Firefox on X11.
+Two-finger horizontal swipes navigate browser history; pinch gestures zoom
+in and out. Firefox handles these natively, including horizontal scrolling
+inside scrollable page content. Its default pinch and swipe preferences are
+retained, along with the Blix policies and Zen's display scale.
+
+After Home reconfiguration, log out and back in (or reboot after the audio
+system update) so the X session and newly started Firefox inherit the setting.
+For a test in the existing session, fully quit Firefox and launch it with
+`MOZ_USE_XINPUT2=1 firefox`. Opening another window while Firefox is already
+running will reuse the old process and its environment.

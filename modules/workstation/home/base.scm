@@ -19,7 +19,8 @@
 
 (define* (make-workstation-home #:key (display-config "") (keyboard-config "") (pointer-config "")
                                 (bar-font "DejaVu Sans Mono:size=10")
-                                (firefox-scale #f))
+                                (firefox-scale #f)
+                                (firefox-touchpad-gestures? #f))
   (home-environment
    (packages
     (append
@@ -53,9 +54,14 @@
      (service home-dbus-service-type)
      (service home-pipewire-service-type)
      (simple-service 'workstation-environment home-environment-variables-service-type
-                     '(("EDITOR" . "nvim") ("VISUAL" . "nvim")
-                       ("BROWSER" . "firefox")
-                       ("PATH" . "$HOME/.local/bin${PATH:+:}$PATH")))
+                     (append
+                      ;; Firefox's X11 backend needs XI2 for native touchpad
+                      ;; pinch zoom and two-finger history navigation.
+                      (if firefox-touchpad-gestures?
+                          '(("MOZ_USE_XINPUT2" . "1")) '())
+                      '(("EDITOR" . "nvim") ("VISUAL" . "nvim")
+                        ("BROWSER" . "firefox")
+                        ("PATH" . "$HOME/.local/bin${PATH:+:}$PATH"))))
      (simple-service
       'workstation-files home-files-service-type
       (cons

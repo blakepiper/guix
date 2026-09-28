@@ -584,3 +584,21 @@ ENOENT and `sof_sdw` remained deferred; Intel SOF itself booted successfully.
 - System activation requires the user's sudo authentication. No activation,
   reboot or audible playback test was performed by the agent. The build fixes
   the confirmed missing-firmware condition; live audio verification is pending.
+
+## Zen Firefox touchpad gestures, 2026-09-27
+
+- Live `xinput --version` reports XI 2.4. Zen's ASUF1208 touchpad has two-finger
+  scrolling, horizontal scrolling and natural scrolling enabled. The running
+  Firefox process had no MOZ_USE_XINPUT2 setting and its saved preferences had
+  no pinch/swipe overrides.
+- `./scripts/guix repl -L modules scripts/check.scm` passed, including both Home
+  service graphs and existing host-specific Firefox/Blix checks.
+- `./scripts/guix home build -L modules hosts/zen/home.scm` passed with the
+  required latest cached stable Firefox and official stable Codex resolution.
+  The generated Home is `/gnu/store/sls1rwfaasyd41gfc7q0fjm3ijha8pp1-home`.
+- `./scripts/guix home reconfigure -L modules hosts/zen/home.scm` passed.
+  The active Home setup-environment exports MOZ_USE_XINPUT2=1. The existing
+  Firefox/X session was not restarted; physical gesture testing is pending
+  a new session (or fully quitting Firefox and launching with the variable).
+- `git diff --check` passed. No shell scripts or system configuration changed
+  in this gesture change, so additional ShellCheck/system builds do not apply.
