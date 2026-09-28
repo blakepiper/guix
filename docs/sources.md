@@ -1,5 +1,15 @@
 # Sources and port decisions
 
+## Wallpaper collection, 2026-09-28
+
+`home/przvl/config/wallpaper/horizon.png` is an unchanged copy of the user's
+`~/Downloads/horizon.png` (SHA-256
+`ba7eebcd6a38de15852bfae473c2cbc9d6b23b5b742e9a1590e8a28762e8f13e`). The original `night.png` remains unchanged alongside it.
+Guix Home installs the entire wallpaper directory, so additional images can be
+collected there without adding individual Home file declarations. The monitor
+helper selects `horizon.png` and uses `feh --bg-fill` at login and after display
+changes, preserving aspect ratio while cropping to fill each display.
+
 ## Wallpaper, 2026-09-26
 
 `home/przvl/config/wallpaper/night.png` is an unchanged copy of the user's

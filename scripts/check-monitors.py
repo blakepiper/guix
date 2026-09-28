@@ -28,7 +28,7 @@ case " $* " in *" --mode "*) [ "$TEST_FAIL_MODE" = 0 ] || exit 1;; esac
 ''')
             stub.chmod(0o755)
             (root / "wallpaper").mkdir()
-            (root / "wallpaper/night.png").touch()
+            (root / "wallpaper/horizon.png").touch()
             feh = root / "feh"
             feh.write_text("#!/bin/sh\nprintf 'wallpaper\\n' >> \"$TEST_ROOT/calls\"\n")
             feh.chmod(0o755)

@@ -83,7 +83,7 @@
         ("alpinews/keyboard.conf" ,(plain-file "keyboard.conf" keyboard-config))
         ("alpinews/display.conf" ,(plain-file "display.conf" display-config))
         ("picom/picom.conf" ,(repository-file "home/przvl/config/picom.conf"))
-        ("wallpaper/night.png" ,(repository-file "home/przvl/config/wallpaper/night.png"))
+        ("wallpaper" ,(repository-file "home/przvl/config/wallpaper" #:recursive? #t))
         ("gammastep/config.ini" ,(repository-file "home/przvl/config/gammastep/config.ini"))
         ("mimeapps.list"
          ,(plain-file "mimeapps.list"

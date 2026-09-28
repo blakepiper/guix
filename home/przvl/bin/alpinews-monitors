@@ -20,7 +20,7 @@ if ! connected "$internal"; then
 fi
 [ -n "$internal" ] || { echo 'No internal panel detected; leaving displays unchanged.' >&2; exit 0; }
 refresh_wallpaper() {
-    wallpaper=${XDG_CONFIG_HOME:-$HOME/.config}/wallpaper/night.png
+    wallpaper=${XDG_CONFIG_HOME:-$HOME/.config}/wallpaper/horizon.png
     if [ -r "$wallpaper" ] && command -v feh >/dev/null 2>&1; then
         # The root pixmap does not resize itself when RandR changes geometry.
         feh --no-fehbg --bg-fill "$wallpaper" ||
