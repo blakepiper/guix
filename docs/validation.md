@@ -694,3 +694,33 @@ Installed only the two tested locker helpers from the new store build into
 `~/.local/state/zen-diagnostics/lock-diagnostics-home`. The running xss-lock will
 resolve the updated helper at its next lock. Full Home activation did not
 complete, and its unrelated wallpaper conflict remains to be reconciled.
+
+## Mirrored screenshot selection, 2026-09-29
+
+Replaced `scrot --freeze --select` with explicit opaque edge selection. Scrot
+1.12.1's freeze path calls XGrabServer, preventing Picom from servicing redraws,
+while edge selection creates override-redirect windows for compositing. The
+channel-pinned 1.12.1 edge renderer also loses borders after resizing under
+Picom. Backported the two renderer files from upstream PR #423 to use four
+ordinary windows, retaining the pinned version and dependencies.
+This addresses the laptop-only selection indicator without changing display
+refresh rates or Picom's opacity/VSync settings. The desktop remains live during
+the drag. Full-screen and focused-window capture commands are unchanged.
+
+`scripts/check-screenshot.py` uses disposable Xvfb and Picom, with VSync disabled
+only in this virtual-display test (Xvfb has no physical vblank timing). Pixel
+assertions reproduce missing borders with the unpatched binary and pass with
+the backport: all four borders survive repeated resizing without stale trails.
+Another X client remains responsive during selection, and the capture produces
+the expected 220x160 PNG with identical clipboard bytes. Escape cancels without
+a saved capture or temporary directory. This is not physical confirmation on
+both mirrored panels; live Picom VSync and output refresh rates are unchanged.
+
+The patched Scrot package, both Home builds, Scheme checks, ShellCheck and
+`git diff --check` passed. No system package/configuration changed. Installed
+the built screenshot helper and patched Scrot through `~/.local/bin`, retaining
+the build with the `~/.local/state/zen-diagnostics/screenshot-home` GC root.
+This avoids repeating the known unrelated wallpaper conflict in full Home
+activation. Once that conflict is reconciled and Home is activated, the manual
+`~/.local/bin/scrot` override can be removed: Home's profile contains the same
+patched package. No reboot or X restart is required for the current install.

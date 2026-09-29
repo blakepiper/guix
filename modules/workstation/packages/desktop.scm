@@ -5,7 +5,19 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages xorg)
+  #:use-module (gnu packages xdisorg)
   #:use-module (workstation files))
+
+(define-public scrot-mirrored
+  (package
+    (inherit scrot)
+    (source
+     (origin
+       (inherit (package-source scrot))
+       (patches
+        (append (origin-patches (package-source scrot))
+                (list (repository-file
+                       "sources/scrot/0001-composited-selection-borders.patch"))))))))
 
 (define-public clipwatch
   (package

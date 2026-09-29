@@ -55,8 +55,17 @@ Read-only local references inspected on 2026-09-26:
   Transient helper state uses elogind's runtime directory or a private session
   fallback. Guix's privileged i3lock path and elogind's `loginctl` are retained;
   there is no systemd user-manager command or dependency in these scripts.
-  Region screenshots use Scrot's `--freeze --select` to avoid classic selection
-  outline trails with Picom VSync; the desktop pauses visually during selection.
+  Region screenshots explicitly use Scrot's opaque `mode=edge` selection window
+  so Picom can repaint the outline on mirrored outputs. Freeze mode forces the
+  classic drawing path and is avoided; the desktop stays live while selecting.
+  Scrot stays at the channel-pinned 1.12.1 with a renderer-only backport from
+  upstream commit `6e566aa8205f8c5b3d071079347c9e6307dc80e8`:
+  <https://github.com/resurrecting-open-source-projects/scrot/pull/423>.
+  `sources/scrot/0001-composited-selection-borders.patch` retains the upstream
+  copyright/license and changes only `src/selection_edge.c` and its structure
+  in `src/scrot_selection.h`. Four ordinary border windows replace the shaped
+  window whose changing shape leaves missing edges under compositors. Upstream
+  dependency changes and changes to default mode selection were not imported.
   The locally authored `workstation-lock-diagnostics` observer records bounded
   process/X metadata around lock startup and resume. Its subprocess closes the
   inherited sleep inhibitor before doing any work; privileged i3lock remains

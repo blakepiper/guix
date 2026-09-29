@@ -8,8 +8,9 @@ work=$(mktemp -d "$dir/.capture.XXXXXX")
 file="$work/capture.png"
 trap 'rm -rf "$work"' EXIT
 case "${1:-}" in
-    # Freeze while selecting so classic outline redraws cannot trail under VSync.
-    '') scrot --freeze --select "$file" ;;
+    # Use a composited window for the outline on every mirrored output.
+    # Freeze forces classic root drawing and prevents Picom from updating it.
+    '') scrot --select --line 'mode=edge,width=3,color=#bbbbbb,opacity=255' "$file" ;;
     --full) scrot "$file" ;;
     --window) scrot --focused "$file" ;;
     *) echo 'Usage: screenshot-region [--full|--window]' >&2; exit 2 ;;

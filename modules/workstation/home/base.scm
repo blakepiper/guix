@@ -24,7 +24,7 @@
   (home-environment
    (packages
     (append
-     (list oxwm-source codex clipwatch blesh
+     (list oxwm-source codex clipwatch blesh scrot-mirrored
            (if firefox-scale (firefox-blix-with-scale firefox-scale) firefox-blix))
      editor-packages
      (specifications->packages
@@ -33,7 +33,7 @@
         "ripgrep" "fd" "gcc-toolchain" "make" "pkg-config"
         "font-dejavu" "font-gnu-freefont" "mpv" "feh" "xdg-utils"
         "xrandr" "xset" "xsetroot" "xinput" "setxkbmap" "xdotool"
-        "xclip" "scrot" "i3lock" "xss-lock" "brightnessctl" "playerctl"
+        "xclip" "i3lock" "xss-lock" "brightnessctl" "playerctl"
         "eudev" "elogind"))))
    (services
     (append editor-services (list
