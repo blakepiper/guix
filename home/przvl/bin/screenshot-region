@@ -8,7 +8,8 @@ work=$(mktemp -d "$dir/.capture.XXXXXX")
 file="$work/capture.png"
 trap 'rm -rf "$work"' EXIT
 case "${1:-}" in
-    '') scrot --select "$file" ;;
+    # Freeze while selecting so classic outline redraws cannot trail under VSync.
+    '') scrot --freeze --select "$file" ;;
     --full) scrot "$file" ;;
     --window) scrot --focused "$file" ;;
     *) echo 'Usage: screenshot-region [--full|--window]' >&2; exit 2 ;;

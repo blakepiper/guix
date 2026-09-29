@@ -55,6 +55,8 @@ Read-only local references inspected on 2026-09-26:
   Transient helper state uses elogind's runtime directory or a private session
   fallback. Guix's privileged i3lock path and elogind's `loginctl` are retained;
   there is no systemd user-manager command or dependency in these scripts.
+  Region screenshots use Scrot's `--freeze --select` to avoid classic selection
+  outline trails with Picom VSync; the desktop pauses visually during selection.
 - Blix `cb7c59f55dd072fae7936ca05b5a3cab088313d4`:
   <https://github.com/blakepiper/blix>. OXWM Lua configuration, microphone keysym
   patch, mirrored-monitor patch, host organization and historical hardware facts.
