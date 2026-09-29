@@ -29,7 +29,7 @@
      editor-packages
      (specifications->packages
       '("picom" "st" "gammastep" "dmenu" "xfe" "git" "curl" "ncurses"
-        "openssh" "fastfetch-minimal"
+        "openssh" "fastfetch-minimal" "radicle"
         "ripgrep" "fd" "gcc-toolchain" "make" "pkg-config"
         "font-dejavu" "font-gnu-freefont" "mpv" "feh" "xdg-utils"
         "xrandr" "xset" "xsetroot" "xinput" "setxkbmap" "xdotool"

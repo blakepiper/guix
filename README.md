@@ -236,6 +236,9 @@ a different installation.
 Picom uses XRender with fully opaque windows, no fading and no shadows.
 Xfe's FOX color palette is managed in `home/przvl/config/xfe/xferc`, independently
 of GTK themes. Restart Xfe after Home reconfiguration to load the colors.
+Radicle's `rad`, `git-remote-rad` and `radicle-node` commands come from the pinned
+Guix `radicle` package in Home. Installation does not create a Radicle identity
+or start a node automatically.
 PipeWire runs through Guix Home. Interactive Bash loads ble.sh for highlighting
 and history/completion suggestions; press Right at the end of the line to
 accept a suggestion.

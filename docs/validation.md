@@ -793,3 +793,15 @@ system build and `git diff --check` passed. Zen Home reconfiguration completed
 and backed up the previous Xfe configuration before linking the managed palette.
 No system activation or boot test was performed. No shell scripts changed, so
 ShellCheck was not applicable. Radicle installation remains pending user approval.
+
+## Radicle CLI installation, 2026-09-29
+
+Following user approval, shared Home now includes the pinned Guix `radicle`
+1.10.2 package. Guix realized the package from its signed Bordeaux substitute;
+no upstream binary exception, custom source snapshot or installer was added.
+The repository Scheme checks, Radicle package build, T490 Home build, Zen Home
+build/reconfiguration and Zen system build passed. The activated `rad`,
+`git-remote-rad` and `radicle-node` commands each report version 1.10.2, and
+`rad --help` succeeds. No identity was created, node started or system activated.
+No shell scripts changed, so ShellCheck was not applicable. `git diff --check`
+passed.
