@@ -1,0 +1,16 @@
+# Xfe uses FOX colors independently of GTK themes.
+[SETTINGS]
+basecolor=#282c34
+bordercolor=#181a1f
+backcolor=#21252b
+forecolor=#dcdfe4
+selbackcolor=#405d78
+selforecolor=#ffffff
+listbackcolor=#21252b
+listforecolor=#dcdfe4
+highlightcolor=#343b46
+pbarcolor=#7fb4ca
+attentioncolor=#e5a478
+scrollbarcolor=#343b46
+hilitecolor=#454c59
+shadowcolor=#181a1f

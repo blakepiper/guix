@@ -228,12 +228,14 @@ a different installation.
 | --- | --- |
 | `Super+Enter` | Open st with Bash, 14-point font |
 | `Super+B` | Open Firefox |
-| `Super+F` | Open Xfe |
+| `Super+F` | Open Xfe with a dark color palette |
 | `Super+L` | Lock the screen |
 | `Super+Shift+Space` | Open the power menu |
 | `Super+Shift+Q` | Exit OXWM |
 
 Picom uses XRender with fully opaque windows, no fading and no shadows.
+Xfe's FOX color palette is managed in `home/przvl/config/xfe/xferc`, independently
+of GTK themes. Restart Xfe after Home reconfiguration to load the colors.
 PipeWire runs through Guix Home. Interactive Bash loads ble.sh for highlighting
 and history/completion suggestions; press Right at the end of the line to
 accept a suggestion.

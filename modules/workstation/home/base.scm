@@ -84,6 +84,7 @@
         ("workstation/keyboard.conf" ,(plain-file "keyboard.conf" keyboard-config))
         ("workstation/display.conf" ,(plain-file "display.conf" display-config))
         ("picom/picom.conf" ,(repository-file "home/przvl/config/picom.conf"))
+        ("xfe/xferc" ,(repository-file "home/przvl/config/xfe/xferc"))
         ;; Manage leaves so an existing wallpaper directory (and extra images)
         ;; survives activation.  Guix's legacy backup copies files, not trees.
         ("wallpaper/horizon.png" ,(repository-file "home/przvl/config/wallpaper/horizon.png"))

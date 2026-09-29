@@ -782,3 +782,14 @@ wallpaper files backed up and replaced by store links. No system activation or
 boot test was performed. No package definitions or shell scripts changed, so
 separate package builds and ShellCheck were not applicable; Home builds realized
 the required packages. `git diff --check` passed.
+
+## Xfe dark palette, 2026-09-29
+
+Home now installs a FOX color palette at `~/.config/xfe/xferc` for the file
+explorer launched by Super+F. An isolated Xfe session visually confirmed dark
+file panes, tree, toolbar and location field with readable text and selections.
+The repository Scheme checks, Xfe package build, both hosts' Home builds, Zen
+system build and `git diff --check` passed. Zen Home reconfiguration completed
+and backed up the previous Xfe configuration before linking the managed palette.
+No system activation or boot test was performed. No shell scripts changed, so
+ShellCheck was not applicable. Radicle installation remains pending user approval.
