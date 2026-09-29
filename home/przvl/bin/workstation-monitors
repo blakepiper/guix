@@ -1,13 +1,13 @@
 #!/bin/sh
 set -eu
 [ -n "${DISPLAY:-}" ] || exit 0
-config=${XDG_CONFIG_HOME:-$HOME/.config}/alpinews/display.conf
+config=${XDG_CONFIG_HOME:-$HOME/.config}/workstation/display.conf
 # shellcheck disable=SC1090
 [ ! -r "$config" ] || . "$config"
-internal=${ALPINEWS_INTERNAL_OUTPUT:-eDP-1}
-external=${ALPINEWS_EXTERNAL_OUTPUT:-HDMI-2}
-mode=${ALPINEWS_MIRROR_MODE:-1920x1080}
-rate=${ALPINEWS_MIRROR_RATE:-60}
+internal=${WORKSTATION_INTERNAL_OUTPUT:-eDP-1}
+external=${WORKSTATION_EXTERNAL_OUTPUT:-HDMI-2}
+mode=${WORKSTATION_MIRROR_MODE:-1920x1080}
+rate=${WORKSTATION_MIRROR_RATE:-60}
 outputs=$(xrandr --query)
 connected() { printf '%s\n' "$outputs" | awk -v o="$1" '$1==o && $2=="connected" {ok=1} END {exit !ok}'; }
 has_mode() {
@@ -32,16 +32,16 @@ restore_panel() {
     for output in $(printf '%s\n' "$outputs" | awk '$2=="disconnected" {print $1}'); do
         xrandr --output "$output" --off
     done
-    if [ -n "${ALPINEWS_INTERNAL_MODE:-}" ] && [ -n "${ALPINEWS_INTERNAL_RATE:-}" ]; then
-        if xrandr --output "$internal" --mode "$ALPINEWS_INTERNAL_MODE" \
-            --rate "$ALPINEWS_INTERNAL_RATE" --scale 1x1 --primary; then
+    if [ -n "${WORKSTATION_INTERNAL_MODE:-}" ] && [ -n "${WORKSTATION_INTERNAL_RATE:-}" ]; then
+        if xrandr --output "$internal" --mode "$WORKSTATION_INTERNAL_MODE" \
+            --rate "$WORKSTATION_INTERNAL_RATE" --scale 1x1 --primary; then
             return 0
         fi
         echo 'Requested panel mode unavailable; using its preferred mode.' >&2
     fi
     xrandr --output "$internal" --auto --scale 1x1 --primary
 }
-if [ "${ALPINEWS_DISPLAY_POLICY:-mirror}" = native ]; then
+if [ "${WORKSTATION_DISPLAY_POLICY:-mirror}" = native ]; then
     restore_panel
     refresh_wallpaper
     exit 0
@@ -52,7 +52,7 @@ fi
 if [ -n "$external" ]; then
     if has_mode "$internal" && has_mode "$external"; then
         xrandr --output "$internal" --mode "$mode" --rate "$rate" --scale 1x1 --primary \
-            --output "$external" --mode "$mode" --rate "${ALPINEWS_EXTERNAL_RATE:-$rate}" --scale 1x1 --same-as "$internal"
+            --output "$external" --mode "$mode" --rate "${WORKSTATION_EXTERNAL_RATE:-$rate}" --scale 1x1 --same-as "$internal"
     else
         echo "Both panels must support $mode to mirror; leaving external layout unchanged." >&2
         xrandr --output "$internal" --auto --scale 1x1 --primary

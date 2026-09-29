@@ -1,8 +1,8 @@
-if vim.env.BLIX_NVIMIDE ~= "1" then
+if vim.env.NVIM_IDE ~= "1" then
   return
 end
 
-local group = vim.api.nvim_create_augroup("blix_nvimide", { clear = true })
+local group = vim.api.nvim_create_augroup("nvim_ide", { clear = true })
 local started = false
 local scheduled = false
 

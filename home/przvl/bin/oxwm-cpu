@@ -1,7 +1,7 @@
 #!/bin/sh
 # One /proc read per bar update; no sleep or resident monitor process.
 set -eu
-file=${XDG_RUNTIME_DIR:?}/alpinews-cpu
+file=${XDG_RUNTIME_DIR:?}/workstation-cpu
 now=$(awk '/^cpu / {idle=$5+$6; total=0; for(i=2;i<=9;i++)total+=$i; print total,idle; exit}' /proc/stat)
 old='0 0'
 [ ! -r "$file" ] || old=$(cat "$file")

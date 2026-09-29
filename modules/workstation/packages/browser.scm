@@ -9,10 +9,10 @@
 
 (define firefox-release (read-firefox-release))
 
-(define-public firefox-blix
+(define-public firefox-with-policies
   (package
     (inherit mozilla:firefox)
-    (name "firefox-blix")
+    (name "firefox-with-policies")
     (version (assoc-ref firefox-release "version"))
     (supported-systems '("x86_64-linux"))
     (source #f)
@@ -54,14 +54,14 @@
     (inputs
      `(("firefox" ,(cached-firefox (assoc-ref firefox-release "path")))
        ("policies" ,(repository-file "home/przvl/config/firefox/policies.json"))))
-    (synopsis "Firefox with the Blix privacy policies")
+    (synopsis "Firefox with workstation privacy policies")
     (description "Firefox from the Nonguix binary cache with the workstation's
-Blix enterprise policies: strict tracking protection, Global Privacy Control,
+enterprise policies: strict tracking protection, Global Privacy Control,
 blocked AI features and sponsored content, plus managed privacy extensions.
 The policy layer reuses the existing Firefox package without recompiling it.")))
 
-;; Layer host display preferences over the unchanged Blix policy object.
-(define-public (firefox-blix-with-scale scale)
+;; Layer host display preferences over the unchanged policy object.
+(define-public (firefox-with-display-scale scale)
   (unless (and (string? scale) (string->number scale)
                (<= 1 (string->number scale) 3))
     (error "Invalid Firefox display scale" scale))
@@ -76,10 +76,10 @@ The policy layer reuses the existing Firefox package without recompiling it.")))
                        (("Value" . ,scale) ("Status" . "locked")))
                     (cdr preferences)))
     (package
-      (inherit firefox-blix)
+      (inherit firefox-with-policies)
       (inputs
        (map (lambda (input)
               (if (string=? (car input) "policies")
                   (list "policies" (plain-file "policies.json" (scm->json-string document)))
                   input))
-            (package-inputs firefox-blix))))))
+            (package-inputs firefox-with-policies))))))

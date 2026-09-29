@@ -60,7 +60,7 @@
               ("libxft" ,libxft) ("fontconfig" ,fontconfig)
               ("lua-source" ,(package-source lua-5.4))))
     (home-page "https://github.com/tonybanters/oxwm")
-    (synopsis "Source-built OXWM with the AlpineWS desktop fixes")
+    (synopsis "Source-built OXWM with the workstation desktop fixes")
     (description "Dynamic X11 window manager configured in Lua, built from the
-pinned upstream release with microphone-key and mirrored-monitor fixes from Blix.")
+pinned upstream release with microphone-key and mirrored-monitor fixes.")
     (license license:expat)))

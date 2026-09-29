@@ -13,7 +13,7 @@ Both hosts inherit `base-operating-system`, the `przvl` account, and
 `desktop-services`: console login/startx, Xorg, root-managed X socket permissions,
 elogind, NetworkManager, screen locking and brightness permissions. Both Home
 entrypoints call `make-workstation-home`. They share OXWM's pinned source build,
-Lua configuration/keybindings, st/Bash, opaque Picom, Firefox/Blix policies,
+Lua configuration/keybindings, st/Bash, opaque Picom, Firefox privacy policies,
 Xfe, Neovim/nvimide, latest stable Codex runtime packaging, PipeWire, clipboard,
 screenshots, status/control helpers and the robust logged X session. Home
 updates retain the existing Firefox cache-only and Codex release resolution.
@@ -58,7 +58,7 @@ a battery already above 79%.
 Zen uses a 14-point OXWM bar font and 125% Firefox interface/content scaling
 on top of these display modes. Home supplies the bar font separately from the
 shared Lua configuration and overlays the Firefox preference on the unchanged
-Blix policies. Firefox reads the policy at startup; the bar font is read when
+Privacy policies. Firefox reads the policy at startup; the bar font is read when
 OXWM starts. These size overrides do not change T490.
 
 ## Kernel and firmware
@@ -201,7 +201,7 @@ Zen's Home environment exports `MOZ_USE_XINPUT2=1` for Firefox on X11.
 Two-finger horizontal swipes navigate browser history; pinch gestures zoom
 in and out. Firefox handles these natively, including horizontal scrolling
 inside scrollable page content. Its default pinch and swipe preferences are
-retained, along with the Blix policies and Zen's display scale.
+retained, along with the privacy policies and Zen's display scale.
 
 After Home reconfiguration, log out and back in (or reboot after the audio
 system update) so the X session and newly started Firefox inherit the setting.

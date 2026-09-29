@@ -26,7 +26,7 @@ and [stability release history](https://product-details.mozilla.org/1.0/firefox_
 A numeric package version alone is insufficient. Both histories are fetched
 before package evaluation; failure aborts the Home command. Version selection
 remains dynamic and downloads still come exclusively from the signed Nonguix
-cache, with no Firefox source-build fallback. Blix policies are unchanged.
+cache, with no Firefox source-build fallback. Privacy policies are unchanged.
 
 The installed 156.0 package is built from release sources. The pinned Nonguix
 `nongnu/packages/mozilla.scm` uses `--enable-release` and
@@ -46,9 +46,9 @@ imports to preserve them. Bash is supplied by `home-bash-service-type`.
 
 Read-only local references inspected on 2026-09-26:
 
-- AlpineWS `c5805aa0f17a160b72bb9d97c45f988728e230cc`:
-  <https://github.com/blakepiper/alpinews>. The display, brightness, status,
-  screenshot and clipboard helpers and MIT-licensed `clipwatch.c` are copied
+- Desktop helper snapshot `c5805aa0f17a160b72bb9d97c45f988728e230cc`:
+  The display, brightness, status, screenshot and clipboard helpers and
+  MIT-licensed `clipwatch.c` are copied
   locally so this repository does not require a sibling checkout at build time.
   The X session now explicitly includes Guix profile paths, logs client output,
   treats display/helper failures as nonfatal, and waits only for OXWM's lifetime.
@@ -70,9 +70,9 @@ Read-only local references inspected on 2026-09-26:
   process/X metadata around lock startup and resume. Its subprocess closes the
   inherited sleep inhibitor before doing any work; privileged i3lock remains
   responsible for authentication and releasing the main inhibitor.
-- Blix `cb7c59f55dd072fae7936ca05b5a3cab088313d4`:
-  <https://github.com/blakepiper/blix>. OXWM Lua configuration, microphone keysym
-  patch, mirrored-monitor patch, host organization and historical hardware facts.
+- Editor/browser configuration snapshot `cb7c59f55dd072fae7936ca05b5a3cab088313d4`:
+  OXWM Lua configuration, microphone keysym patch, mirrored-monitor patch,
+  host organization and historical hardware facts.
   Browser launcher, font, battery variable and helper names are adapted here.
 - OXWM `v0.13.0`, commit `fc4ada9ac4ee8e34ace203290a2b14d10e4671cc`:
   <https://github.com/tonybanters/oxwm/tree/v0.13.0>. MIT license. Source tarball
@@ -106,52 +106,53 @@ Imported upstream code retains its upstream license; this repository does not
 claim authorship of those patches or configurations. No sibling repository was
 modified. No installer or existing system configuration was activated.
 
-Intentional changes from AlpineWS: GNU userland and libc, Shepherd system
-services, Elogind session/power management, Guix Home PipeWire services, Picom,
+Intentional changes from the desktop helper snapshot: GNU userland and libc,
+Shepherd system services, Elogind session/power management, Guix Home PipeWire
+services, Picom,
 the official Codex binary, and packaged st. LibreWolf was subsequently replaced
-by the user's Blix Firefox policies, as described below. CPU microcode remains omitted.
+by the user's Firefox privacy policies, as described below. CPU microcode remains omitted.
 Intel Wi-Fi firmware was subsequently enabled only for the T490 at the user's
-request. Input permissions are managed through Elogind
-and udev rather than Alpine's broad input-group setup.
+request. Input permissions are managed through Elogind and udev.
 
-## Blix editor import
+## Editor configuration import
 
 The complete `home/przvl/config/nvim/` tree and the behavior of the `nvimide`
 launcher in `home/przvl/programs/neovim.nix` were imported from the current clean
-local Blix checkout at `cb7c59f55dd072fae7936ca05b5a3cab088313d4` on 2026-09-26.
+local configuration snapshot at `cb7c59f55dd072fae7936ca05b5a3cab088313d4` on 2026-09-26.
 This is the latest configuration present in that checkout, not an assertion
-about un-fetched remote changes. All ten original configuration files are
-copied byte-for-byte, including the Seafoam theme, lockfile, and IDE layout.
+about un-fetched remote changes. The original import copied ten configuration
+files, including the Seafoam theme, lockfile, and IDE layout. Local adaptations
+now use neutral identifiers.
 
 The only added Lua file is `lua/plugins/guix.lua`: Mason is disabled in favor of
 Guix-managed language servers; Blink uses Lua rather than a downloaded native
 binary; Lua formatting uses the language server fallback because this channel
 does not package StyLua. `nvimide` preserves directory selection, argument
-forwarding, and `BLIX_NVIMIDE=1`, expressed in POSIX shell. Editor dependencies
+forwarding, and `NVIM_IDE=1`, expressed in POSIX shell. Editor dependencies
 and installation are isolated in `modules/workstation/home/editor.scm`.
 
 The shared profile includes `tree-sitter-bash`: Guix Neovim discovers grammars
 through `TREE_SITTER_GRAMMAR_PATH`, rather than nvim-treesitter's downloaded
 `site/parser/bash.so`. Both hosts receive the Bash grammar through Guix Home.
 
-Blix's pinned nvim-treesitter requires Tree-sitter CLI 0.26.1 or newer; the
+The pinned nvim-treesitter requires Tree-sitter CLI 0.26.1 or newer; the
 official channel currently provides 0.25.3. The local editor package builds
 upstream `tree-sitter/tree-sitter` tag `v0.26.1` with SHA-256
 `c547e2e054ca7220e5b30b18ddf67aec4144cf9288ef5c8ef707c98dbe4951eb`.
 `sources/tree-sitter/Cargo.lock` is copied unchanged from that archive; Guix
 imports the registry dependency sources and hashes from it. This is a source
-build, without an npm-distributed executable or changes to Blix's plugin pins.
+build, without an npm-distributed executable or changes to the plugin pins.
 
-## Blix Firefox policies, 2026-09-26
+## Firefox privacy policies, 2026-09-26
 
 `home/przvl/config/firefox/policies.json` is the JSON translation of
-`home/przvl/programs/browser.nix` from the clean Blix checkout
+`home/przvl/programs/browser.nix` from the clean configuration snapshot
 `cb7c59f55dd072fae7936ca05b5a3cab088313d4`. Its policy object was compared with
-both the evaluated Nix declaration and the installed Blix Firefox policy file;
-all fields match. The Mozilla Add-ons URLs retain Blix's automatic extension
+both the evaluated Nix declaration and the installed reference Firefox policy file;
+all fields match. The Mozilla Add-ons URLs retain the automatic extension
 updates. No Nix store path or sibling repository is used by the Guix package.
 
-`firefox-blix` copies the pinned Nonguix Firefox package, preserves its Guix
+`firefox-with-policies` copies the pinned Nonguix Firefox package, preserves its Guix
 library wrapper and installs the policy beside the physical Firefox executable.
 It rewrites launcher/desktop references to the new output, avoiding a full
 Firefox source rebuild for a policy change. Mozilla's
@@ -198,7 +199,7 @@ The initial offline reference is Firefox 156.0, output
 `/gnu/store/ybk9mpvi5aw47hr1bwpf1bqnqjv2x3ml-firefox-156.0`, from
 <https://cuirass.nonguix.org/build/1002769/details>. Home build/reconfigure always
 refreshes the per-command record; it does not use this reference as an update
-pin. The existing Blix policy builder remains in place. No sibling repository
+pin. The existing policy builder remains in place. No sibling repository
 is used at build time or runtime, and no Mozilla upstream binary is introduced.
 
 ## OXWM equal split and gapless tiling, 2026-09-27
@@ -232,7 +233,7 @@ T490's earlier exception or shared free defaults.
 ## Zen first-boot peripherals and charge ceiling, 2026-09-27
 
 Live xrandr confirmed eDP-1 (2880×1800 at 120 Hz, 2560×1440 at 59.99 Hz)
-and DP-1-4-4 (2560×1440 at 144 Hz). The local AlpineWS-derived monitor helper
+and DP-1-4-4 (2560×1440 at 144 Hz). The local shared monitor helper
 now accepts a separate external refresh rate and restores the native panel
 mode after unplugging. Zen opts into 1440p mirroring.
 
@@ -273,7 +274,7 @@ Zen selects a 14-point bar font through a Home-managed file read by the shared
 OXWM Lua configuration. Firefox receives a host-specific policy overlay with
 `layout.css.devPixelsPerPx` set to "1.25". Mozilla's preference definition in
 [StaticPrefList.yaml](https://github.com/mozilla-firefox/firefox/blob/main/modules/libpref/init/StaticPrefList.yaml)
-describes the device-pixel/CSS-pixel scale. All Blix policies and the cached,
+describes the device-pixel/CSS-pixel scale. All privacy policies and the cached,
 signed Firefox resolution/build path are retained; no new binary source is
 introduced. T490 retains the original bar font and Firefox preferences.
 
@@ -289,7 +290,7 @@ semantics follow the installed xf86-input-libinput 1.5.0 driver and its
 
 ## Wallpaper after display changes, 2026-09-27
 
-The AlpineWS-derived monitor helper now reruns feh after successful layout
+The shared monitor helper now reruns feh after successful layout
 changes, including mirror, standalone and preferred-mode fallback paths.
 Previously only session startup painted the wallpaper, leaving an oversized
 root pixmap after reducing resolution or undocking. The original image and
@@ -334,3 +335,16 @@ invocation and its MapNotify readiness handling:
 https://github.com/i3/i3lock/blob/2.13/i3lock.c
 https://github.com/i3/i3lock/blob/2.13/i3lock.1
 No external source was copied and no package/channel pin was changed.
+
+## Neutral local names, 2026-09-29
+
+Local helper commands, configuration directories and transient state use the
+functional `workstation` namespace. Host settings use `WORKSTATION_*`; the IDE
+launcher uses `NVIM_IDE` and Neovim's `nvim_ide` autocommand group. The local
+browser policy package is `firefox-with-policies`, and the editor CLI package is
+`tree-sitter-cli`. External software names and license notices remain upstream.
+
+Copied user-owned inputs are identified above by purpose and source commit,
+without carrying other project names into commands or documentation. The
+renaming does not change Firefox policies, editor plugin pins, host hardware
+exceptions, screenshot rendering or desktop layout behavior.

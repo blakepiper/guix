@@ -25,7 +25,7 @@
    (packages
     (append
      (list oxwm-source codex clipwatch blesh scrot-mirrored
-           (if firefox-scale (firefox-blix-with-scale firefox-scale) firefox-blix))
+           (if firefox-scale (firefox-with-display-scale firefox-scale) firefox-with-policies))
      editor-packages
      (specifications->packages
       '("picom" "st" "gammastep" "dmenu" "xfe" "git" "curl" "ncurses"
@@ -73,16 +73,16 @@
                     (repository-file (string-append "home/przvl/bin/" name)
                                      #:recursive? #t)))
             '("workstation-lock" "workstation-lock-screen" "workstation-lock-diagnostics"
-              "control-menu" "alpinews-monitors"
-              "alpinews-hotplug" "alpinews-keyboards" "alpinews-pointers" "alpinews-brightness" "oxwm-cpu" "oxwm-battery"
+              "control-menu" "workstation-monitors"
+              "workstation-hotplug" "workstation-keyboards" "workstation-pointers" "workstation-brightness" "oxwm-cpu" "oxwm-battery"
               "screenshot-region" "clipboard-history"))))
      (simple-service
       'workstation-config home-xdg-configuration-files-service-type
       `(("oxwm/config.lua" ,(repository-file "home/przvl/config/oxwm/config.lua"))
         ("oxwm/bar-font" ,(plain-file "bar-font" (string-append bar-font "\n")))
-        ("alpinews/pointer.conf" ,(plain-file "pointer.conf" pointer-config))
-        ("alpinews/keyboard.conf" ,(plain-file "keyboard.conf" keyboard-config))
-        ("alpinews/display.conf" ,(plain-file "display.conf" display-config))
+        ("workstation/pointer.conf" ,(plain-file "pointer.conf" pointer-config))
+        ("workstation/keyboard.conf" ,(plain-file "keyboard.conf" keyboard-config))
+        ("workstation/display.conf" ,(plain-file "display.conf" display-config))
         ("picom/picom.conf" ,(repository-file "home/przvl/config/picom.conf"))
         ("wallpaper" ,(repository-file "home/przvl/config/wallpaper" #:recursive? #t))
         ("gammastep/config.ini" ,(repository-file "home/przvl/config/gammastep/config.ini"))

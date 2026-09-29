@@ -34,8 +34,8 @@ cleanup() {
     # Never require an unset XDG variable in the EXIT trap, or remove the
     # elogind runtime directory itself. Only delete our own transient state.
     if [ -n "$runtime" ]; then
-        rm -rf -- "$runtime/alpinews-clipboard"
-        rm -f -- "$runtime/alpinews-cpu"
+        rm -rf -- "$runtime/workstation-clipboard"
+        rm -f -- "$runtime/workstation-cpu"
     fi
     [ -z "$fallback_runtime" ] || rm -rf -- "$fallback_runtime"
     return "$status"
@@ -87,23 +87,23 @@ start_helper() {
     fi
 }
 
-export ALPINEWS_BATTERY=
+export WORKSTATION_BATTERY=
 for battery in /sys/class/power_supply/BAT*; do
     [ -r "$battery/type" ] || continue
-    ALPINEWS_BATTERY=${battery##*/}
+    WORKSTATION_BATTERY=${battery##*/}
     break
 done
-export ALPINEWS_BATTERY
+export WORKSTATION_BATTERY
 optional xsetroot -solid '#1a1b26'
 optional xset r rate 200 50
 optional xset s off
 optional xset +dpms
 optional xset dpms 0 0 0
-optional alpinews-monitors
-optional alpinews-keyboards
-optional alpinews-pointers
+optional workstation-monitors
+optional workstation-keyboards
+optional workstation-pointers
 
-# This is Guix's privileged-program directory, not an Alpine/Nix path.
+# Authentication uses Guix's privileged-program directory.
 # Never substitute an unprivileged i3lock: its PAM authentication needs this.
 if [ -x /run/privileged/bin/i3lock ]; then
     # i3lock closes the transferred inhibitor only after mapping its lock window.
@@ -113,8 +113,8 @@ else
 fi
 start_helper picom --config "${XDG_CONFIG_HOME:-$HOME/.config}/picom/picom.conf"
 if [ -n "$runtime" ]; then
-    start_helper alpinews-hotplug
-    start_helper alpinews-clipwatch
+    start_helper workstation-hotplug
+    start_helper workstation-clipwatch
 fi
 
 if ! command -v oxwm >/dev/null 2>&1; then

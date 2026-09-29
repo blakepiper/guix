@@ -50,7 +50,7 @@ oxwm.bar.set_hide_vacant_tags(false)
 local blocks = {}
 -- The X session detects the actual battery name once. Lua only reads sysfs;
 -- the shell helper adds an estimate from the current discharge rate.
-local battery = os.getenv("ALPINEWS_BATTERY")
+local battery = os.getenv("WORKSTATION_BATTERY")
 if battery and battery:match("^[%w_%-]+$") then
   local probe = io.open("/sys/class/power_supply/" .. battery .. "/type", "r")
   if probe then
@@ -157,8 +157,8 @@ oxwm.key.bind({}, "XF86AudioMicMute", oxwm.spawn("wpctl set-mute @DEFAULT_AUDIO_
 oxwm.key.bind({}, "XF86AudioPlay", oxwm.spawn("playerctl play-pause"))
 oxwm.key.bind({}, "XF86AudioNext", oxwm.spawn("playerctl next"))
 oxwm.key.bind({}, "XF86AudioPrev", oxwm.spawn("playerctl previous"))
-oxwm.key.bind({}, "XF86MonBrightnessUp", oxwm.spawn("alpinews-brightness up"))
-oxwm.key.bind({}, "XF86MonBrightnessDown", oxwm.spawn("alpinews-brightness down"))
+oxwm.key.bind({}, "XF86MonBrightnessUp", oxwm.spawn("workstation-brightness up"))
+oxwm.key.bind({}, "XF86MonBrightnessDown", oxwm.spawn("workstation-brightness down"))
 
 -- Core terminal/window bindings.
 -- spawn_terminal() accepts only an executable name and hides exec failures.

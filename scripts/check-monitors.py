@@ -7,14 +7,14 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-HELPER = ROOT / "home/przvl/bin/alpinews-monitors"
+HELPER = ROOT / "home/przvl/bin/workstation-monitors"
 
 
 class MonitorTests(unittest.TestCase):
     def run_policy(self, host, outputs, fail_mode=False):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            config = root / "alpinews"
+            config = root / "workstation"
             config.mkdir()
             # Use the actual host config string, so changes exercise deployment.
             source = (ROOT / "hosts" / host / "home.scm").read_text()

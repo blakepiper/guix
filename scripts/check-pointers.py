@@ -13,9 +13,9 @@ class PointerTests(unittest.TestCase):
     def test_selected_pointers_and_missing_scroll_property(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / 'alpinews').mkdir()
+            (root / 'workstation').mkdir()
             source = (ROOT / 'hosts/zen/home.scm').read_text()
-            (root / 'alpinews/pointer.conf').write_text(
+            (root / 'workstation/pointer.conf').write_text(
                 source.split('#:pointer-config "')[1].split('"')[0])
             (root / 'xinput').write_text('''#!/bin/sh
 case "$1" in
@@ -46,7 +46,7 @@ esac
             (root / 'xinput').chmod(0o755)
             env = dict(os.environ, XDG_CONFIG_HOME=tmp, TEST_ROOT=tmp,
                        DISPLAY=':999', PATH=tmp + os.pathsep + os.environ['PATH'])
-            subprocess.run(['sh', str(ROOT / 'home/przvl/bin/alpinews-pointers')],
+            subprocess.run(['sh', str(ROOT / 'home/przvl/bin/workstation-pointers')],
                            env=env, check=True)
             self.assertEqual((root / 'calls').read_text().splitlines(),
                              ['set-prop 11 libinput Natural Scrolling Enabled 1',

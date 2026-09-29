@@ -13,9 +13,9 @@ class KeyboardTests(unittest.TestCase):
     def test_only_matching_slave_keyboards_are_changed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / 'alpinews').mkdir()
+            (root / 'workstation').mkdir()
             source = (ROOT / 'hosts/zen/home.scm').read_text()
-            (root / 'alpinews/keyboard.conf').write_text(
+            (root / 'workstation/keyboard.conf').write_text(
                 source.split('#:keyboard-config "')[1].split('"')[0])
             (root / 'xinput').write_text('''#!/bin/sh
 if [ "$1" = list ]; then
@@ -38,7 +38,7 @@ printf '%s\\n' "$*" >> "$TEST_ROOT/calls"
                 (root / name).chmod(0o755)
             env = dict(os.environ, XDG_CONFIG_HOME=tmp, TEST_ROOT=tmp,
                        DISPLAY=':999', PATH=tmp + os.pathsep + os.environ['PATH'])
-            subprocess.run(['sh', str(ROOT / 'home/przvl/bin/alpinews-keyboards')],
+            subprocess.run(['sh', str(ROOT / 'home/przvl/bin/workstation-keyboards')],
                            env=env, check=True)
             self.assertEqual((root / 'calls').read_text().splitlines(), [
                 '-device 9 -option  -option altwin:swap_alt_win',

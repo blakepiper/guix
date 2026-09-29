@@ -21,7 +21,7 @@
 
 (define-public clipwatch
   (package
-    (name "alpinews-clipwatch")
+    (name "workstation-clipwatch")
     (version "1")
     (source (repository-file "sources/clipwatch.c"))
     (build-system gnu-build-system)
@@ -35,13 +35,13 @@
                (delete 'configure)
                (replace 'build
                  (lambda _
-                   (invoke "gcc" "-O2" "clipwatch.c" "-o" "alpinews-clipwatch"
+                   (invoke "gcc" "-O2" "clipwatch.c" "-o" "workstation-clipwatch"
                            "-lX11" "-lXfixes")))
                (replace 'install
                  (lambda _
-                   (install-file "alpinews-clipwatch" (string-append #$output "/bin")))))))
+                   (install-file "workstation-clipwatch" (string-append #$output "/bin")))))))
     (inputs (list libx11 libxfixes))
-    (home-page "https://github.com/blakepiper/alpinews")
+    (home-page "https://github.com/blakepiper/guix")
     (synopsis "Event-driven X11 clipboard history listener")
-    (description "AlpineWS clipboard listener compiled against GNU libc.")
+    (description "Event-driven clipboard listener compiled against GNU libc.")
     (license license:expat)))

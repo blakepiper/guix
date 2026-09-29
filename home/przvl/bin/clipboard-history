@@ -1,8 +1,9 @@
 #!/bin/sh
 # Private text-only history. Image selections are never converted to text.
+# shellcheck disable=SC2012 # Filenames are generated SHA-256 hashes, never user names.
 set -eu
 umask 077
-dir=${XDG_RUNTIME_DIR:?}/alpinews-clipboard
+dir=${XDG_RUNTIME_DIR:?}/workstation-clipboard
 mkdir -p "$dir"
 [ ! -L "$dir" ] && [ "$(stat -c %u "$dir")" = "$(id -u)" ] || exit 1
 chmod 700 "$dir"

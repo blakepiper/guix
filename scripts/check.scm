@@ -50,20 +50,20 @@
                      '("bash-minimal" "glibc" "ncurses-with-tinfo"))
              (memq codex (home-environment-packages home)))
   (error "Codex must use the complete resolved official runtime and its Guix relocation inputs"))
-(unless (and (memq firefox-blix (home-environment-packages home))
-             (eq? (package-build-system firefox-blix) trivial-build-system)
-             (not (package-source firefox-blix))
-             (let ((input (cadr (assoc "firefox" (package-inputs firefox-blix)))))
+(unless (and (memq firefox-with-policies (home-environment-packages home))
+             (eq? (package-build-system firefox-with-policies) trivial-build-system)
+             (not (package-source firefox-with-policies))
+             (let ((input (cadr (assoc "firefox" (package-inputs firefox-with-policies)))))
                (and (cached-firefox? input)
                     (string-prefix? "/gnu/store/" (cached-firefox-path input))
-                    (string-suffix? (string-append "-firefox-" (package-version firefox-blix))
+                    (string-suffix? (string-append "-firefox-" (package-version firefox-with-policies))
                                     (cached-firefox-path input))))
              (not (any (lambda (entry)
                          (string=? (package-name (if (pair? entry) (car entry) entry))
                                    "librewolf"))
                        (home-environment-packages home))))
-  (error "Home must use the Blix policy package around the channel's Firefox"))
-(let* ((input (cadr (assoc "policies" (package-inputs firefox-blix))))
+  (error "Home must use the privacy policy package around the channel's Firefox"))
+(let* ((input (cadr (assoc "policies" (package-inputs firefox-with-policies))))
        (policies (assoc-ref (call-with-input-file (local-file-file input) json->scm)
                             "policies"))
        (extensions (assoc-ref policies "ExtensionSettings")))
@@ -78,7 +78,7 @@
                                (eq? #t (assoc-ref extension "private_browsing")))))
                       '("uBlock0@raymondhill.net" "addon@darkreader.org"
                         "enhancerforyoutube@maximerf.addons.mozilla.org")))
-    (error "Blix Firefox privacy policies/extensions must be preserved")))
+    (error "Firefox privacy policies/extensions must be preserved")))
 (unless (string=? (operating-system-host-name system) "t490")
   (error "Unexpected hostname"))
 ;; Console startx must retain its root-managed socket and PAM screen locker.
@@ -101,9 +101,9 @@
                             name))
                 (home-environment-packages home))
      (error "Missing X11 session package in Home" name)))
- '("oxwm-source" "st" "openssh" "fastfetch-minimal" "blesh" "firefox-blix"
+ '("oxwm-source" "st" "openssh" "fastfetch-minimal" "blesh" "firefox-with-policies"
    "xsetroot" "xset" "xrandr" "picom" "xss-lock" "i3lock"
-   "alpinews-clipwatch" "eudev" "elogind"))
+   "workstation-clipwatch" "eudev" "elogind"))
 (let* ((files (find (lambda (service)
                       (eq? (service-type-name (service-kind service))
                            'workstation-files))
@@ -232,12 +232,12 @@
   (error "Both hosts must share applications, services, session and helpers"))
 (define (display-config home)
   (plain-file-content
-   (cadr (assoc "alpinews/display.conf"
+   (cadr (assoc "workstation/display.conf"
                 (service-value (home-service home 'workstation-config))))))
-(unless (and (string-contains (display-config home) "ALPINEWS_MIRROR_MODE=1920x1080")
-             (string-contains (display-config zen-home) "ALPINEWS_DISPLAY_POLICY=mirror")
-             (string-contains (display-config zen-home) "ALPINEWS_INTERNAL_MODE=1920x1200")
-             (string-contains (display-config zen-home) "ALPINEWS_INTERNAL_RATE=60"))
+(unless (and (string-contains (display-config home) "WORKSTATION_MIRROR_MODE=1920x1080")
+             (string-contains (display-config zen-home) "WORKSTATION_DISPLAY_POLICY=mirror")
+             (string-contains (display-config zen-home) "WORKSTATION_INTERNAL_MODE=1920x1200")
+             (string-contains (display-config zen-home) "WORKSTATION_INTERNAL_RATE=60"))
   (error "Host display policies must remain distinct"))
 (fold-services (home-environment-services zen-home) #:target-type home-service-type)
 (display "Zen storage guard, composition, Home and both service graphs checked.\n")
@@ -290,13 +290,13 @@
         ((vector? value) (list->vector (map canonical-json (vector->list value))))
         (else value)))
 
-;; Host scaling must add only its display preference, preserving Blix policy.
-(let* ((browser (find (lambda (p) (string=? (package-name p) "firefox-blix"))
+;; Host scaling must add only its display preference, preserving privacy policy.
+(let* ((browser (find (lambda (p) (string=? (package-name p) "firefox-with-policies"))
                       (home-environment-packages zen-home)))
        (policy (cadr (assoc "policies" (package-inputs browser))))
        (base (assoc-ref
               (call-with-input-file
-                  (local-file-file (cadr (assoc "policies" (package-inputs firefox-blix))))
+                  (local-file-file (cadr (assoc "policies" (package-inputs firefox-with-policies))))
                 json->scm)
               "policies"))
        (overlay (assoc-ref (json-string->scm (plain-file-content policy)) "policies"))
@@ -314,7 +314,7 @@
                             (equal? (canonical-json (cdr entry))
                                     (canonical-json (assoc-ref overlay (car entry))))))
                       base))
-    (error "Zen scale overlay must preserve every Blix policy")))
+    (error "Zen scale overlay must preserve every privacy policy")))
 (for-each
  (lambda (entry)
    (let* ((config (service-value (home-service (car entry) 'workstation-config)))
@@ -323,4 +323,4 @@
        (error "Unexpected host bar font"))))
  (list (cons home "DejaVu Sans Mono:size=10\n")
        (cons zen-home "DejaVu Sans Mono:size=14\n")))
-(display "Zen bar/Firefox sizing preserves T490 defaults and Blix policies.\n")
+(display "Zen bar/Firefox sizing preserves T490 defaults and privacy policies.\n")

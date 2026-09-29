@@ -14,7 +14,7 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Home Manager keeps ~/.config/nvim in the read-only Nix store. Keep the
+-- Guix Home keeps ~/.config/nvim in the read-only store. Keep the
 -- declarative lockfile as the initial seed, but let lazy.nvim update its
 -- working copy in Neovim's writable state directory.
 local config_lockfile = vim.fn.stdpath("config") .. "/lazy-lock.json"

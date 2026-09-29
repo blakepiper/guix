@@ -8,7 +8,7 @@
   #:export (editor-packages editor-services))
 
 (define editor-packages
-  (cons tree-sitter-cli-for-blix
+  (cons tree-sitter-cli
         (specifications->packages
          '("neovim" "tree-sitter-bash" "lua-language-server" "node"
            "unzip" "fzf" "shfmt" "font-nerd-symbols"))))
@@ -16,7 +16,7 @@
 ;; Guix Neovim discovers grammars through TREE_SITTER_GRAMMAR_PATH, so Bash
 ;; needs a profile grammar even when nvim-treesitter has downloaded its parser.
 ;; Git, curl, GCC, make, ripgrep, fd and xclip come from the shared Home profile.
-;; Parser/plugin builds go into Neovim's writable data directory, and Blix's
+;; Parser/plugin builds go into Neovim's writable data directory, and
 ;; lazy.lua seeds a writable state lockfile from the checked-in lockfile.
 (define editor-services
   (list

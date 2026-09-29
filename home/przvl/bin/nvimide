@@ -1,9 +1,9 @@
 #!/bin/sh
-# Launcher behavior from Blix's home/przvl/programs/neovim.nix.
+# Open the optional project directory and enable the editor IDE layout.
 set -eu
 if [ "$#" -gt 0 ] && [ -d "$1" ]; then
     cd -- "$1"
     shift
 fi
-export BLIX_NVIMIDE=1
+export NVIM_IDE=1
 exec nvim "$@"

@@ -10,11 +10,11 @@
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages node)
   #:use-module (workstation files)
-  #:export (tree-sitter-cli-for-blix))
+  #:export (tree-sitter-cli))
 
-(define tree-sitter-cli-for-blix
+(define tree-sitter-cli
   (package
-    (name "tree-sitter-cli-for-blix")
+    (name "tree-sitter-cli")
     (version "0.26.1")
     (source
      (origin
@@ -49,8 +49,8 @@
            (cargo-inputs-from-lockfile
             (local-file-file (repository-file "sources/tree-sitter/Cargo.lock")))))
     (home-page "https://tree-sitter.github.io/tree-sitter/")
-    (synopsis "Tree-sitter CLI compatible with Blix's Neovim plugins")
+    (synopsis "Tree-sitter CLI compatible with the pinned Neovim plugins")
     (description "Source-built Tree-sitter 0.26.1 CLI, the minimum supported by
-the pinned Blix nvim-treesitter configuration.  Dependencies are imported from
+the pinned nvim-treesitter configuration.  Dependencies are imported from
 the upstream release lockfile and fetched as hash-checked source inputs.")
     (license license:expat)))

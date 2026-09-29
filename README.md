@@ -238,7 +238,7 @@ PipeWire runs through Guix Home. Interactive Bash loads ble.sh for highlighting
 and history/completion suggestions; press Right at the end of the line to
 accept a suggestion.
 
-Run `nvimide [directory] [files…]` for the Blix editor layout with its explorer
+Run `nvimide [directory] [files…]` for the IDE layout with its explorer
 and two terminal panes, or `nvim` for normal startup. The copied LazyVim
 configuration uses Guix's language server and build tools, disables Mason binary
 downloads, and uses Blink's Lua fuzzy matcher. Lazy.nvim downloads plugin sources
@@ -252,7 +252,7 @@ configured here.
 
 ## Browser and Codex updates
 
-Firefox keeps the Blix policies: strict tracking protection, Global Privacy
+Firefox keeps the privacy policies: strict tracking protection, Global Privacy
 Control, blocked AI features and sponsored content, and managed uBlock Origin,
 Dark Reader and Enhancer for YouTube extensions. Inspect `about:policies` for
 the active policy set. The existing browser profile remains user-managed;
@@ -311,7 +311,7 @@ For local package and session-helper changes, run the relevant checks:
    python3 scripts/check-xsession.py &&
    python3 scripts/check-keyboards.py &&
    python3 scripts/check-pointers.py &&
-   shellcheck home/przvl/bin/alpinews-monitors'
+   shellcheck home/przvl/bin/workstation-monitors'
 ```
 
 Run ShellCheck on any other changed shell scripts as well. Use `-L modules`,
@@ -364,7 +364,7 @@ To add a host, compose the shared modules through
 battery behavior and input exceptions in that directory. Shared modules accept
 host parameters; they should not branch on hostname.
 
-Desktop conventions come from AlpineWS, with configuration organization,
-Firefox policies and the editor setup adapted from Blix. Copied inputs live in
-this repository; builds and runtime do not require sibling checkouts. See
+Desktop helpers, Firefox policies and the editor configuration are maintained
+in this repository. Copied inputs are local; builds and runtime do not require
+sibling checkouts. See
 [sources and attribution](docs/sources.md).

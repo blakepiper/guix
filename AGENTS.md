@@ -1,5 +1,9 @@
 # Guix workstation conventions
 
+- Use neutral, functional names for local commands, packages, configuration and
+  documentation. Do not carry branding from the user's other projects into this
+  repository. Preserve required licenses and record source snapshot commit IDs
+  in `docs/sources.md`.
 - Keep host facts in `hosts/<name>/`; shared Scheme modules belong under
   `modules/workstation/`. Use `-L modules`, not `-L .`, so Guix's package
   discovery does not evaluate host entrypoints as package modules.
@@ -18,7 +22,7 @@
   available in the Nonguix cache before package evaluation. Fetch its signed
   store output and runtime closure with local builds and offloading disabled;
   abort on failure. Never fall back to a Firefox source build or a fixed Home
-  version. Keep the Blix policies; keep other channels/packages pinned. The
+  version. Keep the Firefox privacy policies; keep other channels/packages pinned. The
   checked-in Firefox record is for offline evaluation only. Use scripts/guix.
 - Picom must keep all windows opaque. Do not add transparency, fading or
   shadows without an explicit request.

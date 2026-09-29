@@ -1,5 +1,14 @@
 #!/bin/sh
-b=${ALPINEWS_BATTERY:-}
+b=${WORKSTATION_BATTERY:-}
+# Also work from an existing session which has not loaded the new environment.
+if [ -z "$b" ]; then
+    for battery in /sys/class/power_supply/BAT*; do
+        [ -r "$battery/type" ] || continue
+        [ "$(cat "$battery/type")" = Battery ] || continue
+        b=${battery##*/}
+        break
+    done
+fi
 case "$b" in ''|*[!a-zA-Z0-9_-]*) exit 0 ;; esac
 p=/sys/class/power_supply/$b
 [ -r "$p/capacity" ] || exit 0

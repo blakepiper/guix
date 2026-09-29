@@ -1,4 +1,4 @@
-/* AlpineWS: XFixes selection events, without a polling/Bash clipboard daemon.
+/* XFixes selection events, without a polling/Bash clipboard daemon.
  * SPDX-License-Identifier: MIT */
 #include <X11/Xlib.h>
 #include <X11/extensions/Xfixes.h>

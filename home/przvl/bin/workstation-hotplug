@@ -2,7 +2,7 @@
 # Block on kernel-device events; never poll xrandr at idle.
 set -eu
 [ -n "${DISPLAY:-}" ] && [ -n "${XDG_RUNTIME_DIR:-}" ] || exit 1
-work=$(mktemp -d "$XDG_RUNTIME_DIR/alpinews-hotplug.XXXXXX")
+work=$(mktemp -d "$XDG_RUNTIME_DIR/workstation-hotplug.XXXXXX")
 pid=''
 cleanup() {
     trap - EXIT
@@ -23,13 +23,13 @@ while IFS= read -r line; do
         '')
             if [ "$action" = change ] && [ "$hotplug" = 1 ]; then
                 sleep 0.2
-                alpinews-monitors || :
+                workstation-monitors || :
             fi
             if [ "$subsystem" = input ] && [ "$action" = add ]; then
                 # Let Xorg create the slave devices before configuring them.
                 sleep 1
-                alpinews-keyboards || :
-                alpinews-pointers || :
+                workstation-keyboards || :
+                workstation-pointers || :
             fi
             action='' hotplug='' subsystem='' ;;
     esac

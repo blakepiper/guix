@@ -40,9 +40,9 @@ class SessionTests(unittest.TestCase):
         self.script("stat", '''
 for arg do case "$arg" in /run/user/*) exit 1 ;; esac; done
 exec ''' + shlex.quote(shutil.which("stat")) + ' "$@"\n')
-        for name in ("xsetroot", "xset", "alpinews-monitors"):
+        for name in ("xsetroot", "xset", "workstation-monitors"):
             self.script(name, 'echo "simulated setup failure: $0" >&2\nexit 23\n')
-        for name in ("picom", "alpinews-hotplug", "alpinews-clipwatch", "xss-lock"):
+        for name in ("picom", "workstation-hotplug", "workstation-clipwatch", "xss-lock"):
             self.script(name, '''
 if [ "$TEST_HELPERS_FAIL" = 1 ]; then echo "simulated helper failure: $0" >&2; exit 19; fi
 printf '%s' "$$" > "$TEST_CONTROL/${0##*/}.pid"
@@ -133,16 +133,16 @@ exit "$TEST_WM_STATUS"
 
     def test_wm_failure_status_and_cleanup(self):
         self.env.update(TEST_HELPERS_FAIL="0", TEST_WM_STATUS="42")
-        (self.runtime / "alpinews-clipboard").mkdir()
-        (self.runtime / "alpinews-clipboard/item").touch()
-        (self.runtime / "alpinews-cpu").touch()
+        (self.runtime / "workstation-clipboard").mkdir()
+        (self.runtime / "workstation-clipboard/item").touch()
+        (self.runtime / "workstation-cpu").touch()
         (self.runtime / "unrelated").touch()
         self.start()
         self.finish(42)
         self.assert_children_gone()
         self.assertTrue((self.runtime / "unrelated").exists())
-        self.assertFalse((self.runtime / "alpinews-clipboard").exists())
-        self.assertFalse((self.runtime / "alpinews-cpu").exists())
+        self.assertFalse((self.runtime / "workstation-clipboard").exists())
+        self.assertFalse((self.runtime / "workstation-cpu").exists())
 
     def test_missing_runtime_environment(self):
         self.env.pop("XDG_RUNTIME_DIR")
@@ -155,11 +155,11 @@ exit "$TEST_WM_STATUS"
 
     def test_invalid_runtime_is_not_cleaned(self):
         self.runtime.chmod(0o755)
-        (self.runtime / "alpinews-cpu").touch()
+        (self.runtime / "workstation-cpu").touch()
         self.start()
         self.assertNotEqual((self.control / "runtime").read_text(), str(self.runtime))
         self.finish()
-        self.assertTrue((self.runtime / "alpinews-cpu").exists())
+        self.assertTrue((self.runtime / "workstation-cpu").exists())
 
     def test_signal_cleans_up_wm_and_helpers(self):
         self.env["TEST_HELPERS_FAIL"] = "0"

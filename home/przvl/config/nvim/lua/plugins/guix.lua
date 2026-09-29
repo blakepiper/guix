@@ -1,4 +1,4 @@
--- Guix-specific integration. The rest of this tree is copied intact from Blix.
+-- Use Guix-managed language servers and editor dependencies.
 -- Ordinary downloaded Linux executables do not have Guix's store paths.
 return {
   { "mason-org/mason.nvim", enabled = false },

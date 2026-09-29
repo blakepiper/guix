@@ -115,7 +115,7 @@ entries below describe earlier environments and do not supersede these results.
 
 Home build/reconfigure now resolves the newest successful stable x86_64
 Firefox advertised by the Nonguix cache, fetches its signed output and closure
-with local builds/offloading disabled, then applies the existing Blix policies.
+with local builds/offloading disabled, then applies the existing imported policies.
 The policy package uses a file-like store reference with no Firefox source
 recipe. The desktop service retains the cache URL/key; existing installations
 need the documented one-time key authorization before the first Home update.
@@ -145,8 +145,8 @@ Validation:
 The reported permission denial had the same cause as the terminal wrapper:
 `editor-launcher` imported the executable script as a flat `local-file`, losing
 its executable bit in the store. Its Home import now uses `#:recursive? #t`.
-The existing POSIX-shell port already matches Blix's launcher: change to an
-optional directory argument, set `BLIX_NVIMIDE=1`, and pass remaining arguments
+The POSIX-shell launcher changes to an optional directory argument, sets
+`NVIM_IDE=1`, and passes remaining arguments
 to the Home-provided Neovim. No editor configuration changes were needed.
 
 ShellCheck passes. A real Neovim run with disposable state/cached test plugins
@@ -161,25 +161,25 @@ using the pinned channel sources, including the Firefox and Codex assertions.
 This development machine has no working Guix daemon, so daemon-backed package
 and Home builds remain to be run on the T490; evaluation is not a build test.
 
-## Blix Firefox policy port, 2026-09-26
+## Firefox policy port, 2026-09-26
 
-The user requested replacing LibreWolf with their existing Blix Firefox setup.
-The imported policy object exactly matches both the evaluated Blix Nix module
+The user requested replacing LibreWolf with their existing Firefox setup.
+The imported policy object exactly matches both the evaluated source Nix module
 and its installed policies.json. The Home package, BROWSER, MIME associations
 and Super+B binding now use Firefox. Other desktop settings are unchanged.
 
-The `firefox-blix` builder copies the channel package and adds the policies in
+The `firefox-with-policies` builder copies the channel package and adds the policies in
 the physical application's `distribution/policies.json`, preserving/repointing
 Guix's existing launcher and desktop entries. Its Firefox dependency can use
 the normal channel build/substitute; policy edits alone do not rebuild Firefox.
 
 Validation used the actual Scheme builder with a Guix-shaped fixture made from
 the development machine's Firefox 156.0. A disposable headless Firefox profile
-reported every Blix policy active through Marionette, including all three
+reported every privacy policy active through Marionette, including all three
 extension declarations; effective tracking protection was strict and GPC true.
 This validates runtime policy discovery, not a Guix daemon-backed Firefox build
 or completed extension downloads. The extensions use Mozilla Add-ons at browser
-startup, as in Blix. Existing browser profiles were not modified.
+startup, as in the reference configuration. Existing browser profiles were not modified.
 
 Home reconfiguration is sufficient. Start a fresh console/X session to refresh
 the OXWM binding and BROWSER environment; Firefox itself can be launched from
@@ -284,7 +284,7 @@ The remaining desktop helpers had the same flat-import bug, including commands
 used by screenshot, clipboard, lock, control-menu and brightness bindings.
 Their Home imports, and `.xinitrc`, now preserve executable permissions with
 `#:recursive? #t`. Their contents and bindings are unchanged. Other spawn
-commands resolve to declared packages; no Alpine/Nix executable path was found.
+commands resolve to declared Guix packages.
 
 Validation:
 
@@ -327,7 +327,7 @@ cleanly when its client script terminates. Repository investigation found:
   display-manager session wrappers, including their `.xsession-errors` setup.
   Home already deploys the executable repository file correctly.
 - The old `.xinitrc` used `set -eu` around foreground `xsetroot`, `xset` and
-  `alpinews-monitors` calls before installing its cleanup trap. Any nonzero
+  `workstation-monitors` calls before installing its cleanup trap. Any nonzero
   result, including a missing command or RandR mode/rate failure,
   could terminate the X client before OXWM ran. It only prepended `.local/bin`,
   assuming the current console shell had already sourced the Home environment.
@@ -336,7 +336,7 @@ cleanly when its client script terminates. Repository investigation found:
 - Asynchronous helper failures do not propagate through POSIX `set -e`.
   Waiting only for OXWM is retained. Its exit status is now logged and preserved;
   helper and transient-state cleanup also runs on session termination signals.
-- `alpinews-monitors` retains its existing layout policy and its own failure
+- `workstation-monitors` retains its existing layout policy and its own failure
   status. The session gives foreground setup a ten-second timeout plus a
   two-second kill grace and treats errors as optional. Hotplug still uses
   eudev's `udevadm`; clipboard events use the Home-packaged listener. Picom's
@@ -518,7 +518,7 @@ own existing build requirements.
   `fb556d47e9dfbd246d748f3fc6d7cf9edba6c656`, using the local Nix-provided
   Guile/Guix runtime for its dependencies. This is not a daemon-backed
   `guix time-machine` build. Evaluation selected LibreWolf 155.0.1-1.
-- Pinned OXWM 0.13.0 tarball hash, both Blix patches, and the offline Lua source
+- Pinned OXWM 0.13.0 tarball hash, both imported patches, and the offline Lua source
   substitution used by the recipe.
 - Patched OXWM compiled with Zig 0.16.0 in a temporary Nix build environment;
   `zig build test -j2` passed. This is source/build-script evidence, not a Guix
@@ -538,9 +538,9 @@ network, sound or physical T490 graphics test is claimed.
 Before installation, verify the actual storage identities in
 `hosts/t490/hardware.scm`. Follow the build and hardware checks in the README.
 
-## Blix editor import, 2026-09-26
+## Editor configuration import, 2026-09-26
 
-- Compared all ten imported Blix Neovim files byte-for-byte against the clean
+- Compared all ten imported Neovim files byte-for-byte against the clean
   local checkout. The only additional Lua file is `lua/plugins/guix.lua`.
 - Ran the real LazyVim configuration in a disposable HOME with a private copy
   of the existing plugin/parser cache. Seafoam, the writable state lockfile,
@@ -623,7 +623,7 @@ ENOENT and `sof_sdw` remained deferred; Intel SOF itself booted successfully.
   Firefox process had no MOZ_USE_XINPUT2 setting and its saved preferences had
   no pinch/swipe overrides.
 - `./scripts/guix repl -L modules scripts/check.scm` passed, including both Home
-  service graphs and existing host-specific Firefox/Blix checks.
+  service graphs and existing host-specific Firefox policy checks.
 - `./scripts/guix home build -L modules hosts/zen/home.scm` passed with the
   required latest cached stable Firefox and official stable Codex resolution.
   The generated Home is `/gnu/store/sls1rwfaasyd41gfc7q0fjm3ijha8pp1-home`.
@@ -724,3 +724,45 @@ This avoids repeating the known unrelated wallpaper conflict in full Home
 activation. Once that conflict is reconciled and Home is activated, the manual
 `~/.local/bin/scrot` override can be removed: Home's profile contains the same
 patched package. No reboot or X restart is required for the current install.
+
+## Neutral local names, 2026-09-29
+
+Renamed shared helper executables, runtime/configuration paths, host environment
+variables, clipboard package output, browser policy package, Tree-sitter package,
+and editor integration identifiers. Updated launcher references, tests, source
+notes and repository conventions together. The source snapshot commits and
+required license notices remain recorded; browser policies and plugin pins are
+unchanged.
+
+Monitor policy (six cases), pointer, keyboard and X-session (eight cases) checks
+passed with the new paths and environment variables. OXWM accepted the Lua
+configuration. Isolated headless Neovim checks verified that `NVIM_IDE=1` starts
+the explorer and two terminals through the renamed autocommand group, while
+ordinary startup leaves that layout disabled. ShellCheck passed for all changed
+shell helpers, and the battery helper still reports the live battery when an
+older running session lacks the new environment variable.
+
+The renamed clipboard package passed an isolated Xvfb/XFixes selection test:
+text was recorded in the neutral runtime directory. The IDE launcher preserved
+an argument and project path containing spaces. The renamed package builds,
+both final Home builds, repository Scheme checks and Zen system build passed.
+No system was activated and no reboot or physical suspend test was performed.
+
+Zen Home reconfiguration completed. The pre-existing real wallpaper directory
+was temporarily preserved around activation and restored exactly afterward.
+The obsolete helper links/configuration directory were removed by Home. Existing
+clipboard history and CPU sample state were migrated; replacement hotplug and
+clipboard helpers run under a temporary supervisor tied to the existing X
+session. OXWM and applications were not restarted. Its already-loaded brightness
+bindings finish switching to the new command names on the next normal login.
+The battery helper discovers the battery if this older session lacks the renamed
+environment variable. The generated application-launcher cache was rebuilt and
+contains only the neutral helper names. The temporary Scrot command override
+from the preceding change was removed because the active Home profile now
+supplies that patched package.
+
+A case-insensitive audit of the current repository files and filenames, active
+helper/configuration paths, and launcher entries found no former project names.
+Historical Git commits, old Guix generations and saved diagnostic logs were not
+rewritten. This is a naming migration; the Firefox policy JSON, plugin lockfile,
+channel pins and host hardware policies are unchanged.
