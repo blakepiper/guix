@@ -1,6 +1,6 @@
 -- Minimal black theme shared by nvim and nvimide.
 -- st 0.9.3 supplies the background, foreground, cursor and terminal palette.
--- Imported highlight mappings use grayscale syntax and chrome, with muted
+-- Keep chrome grayscale, with terminal-inspired syntax colors and muted
 -- semantic accents for diagnostics, diffs and Git state.
 
 local c = {
@@ -27,6 +27,16 @@ local c = {
   bright_magenta = "#e5e5e5",
   bright_cyan = "#bcbcbc",
   bright_white = "#ffffff",
+}
+
+-- Syntax accents inspired by the terminal reference; independent of chrome.
+local syntax = {
+  bright_red = "#e58b8b",
+  bright_green = "#a6da95",
+  bright_yellow = "#e5c07b",
+  bright_blue = "#82b4ff",
+  bright_magenta = "#c6a0f6",
+  bright_cyan = "#8bd5ca",
 }
 
 local semantic = {
@@ -148,40 +158,40 @@ local function apply()
 
   -- Built-in syntax groups.
   hi("Comment", { fg = c.bright_black, italic = true })
-  hi("Constant", { fg = c.bright_yellow })
-  hi("String", { fg = c.bright_green })
-  hi("Character", { fg = c.bright_green })
-  hi("Number", { fg = c.bright_yellow })
-  hi("Boolean", { fg = c.bright_yellow, bold = true })
-  hi("Float", { fg = c.bright_yellow })
+  hi("Constant", { fg = syntax.bright_yellow })
+  hi("String", { fg = syntax.bright_green })
+  hi("Character", { fg = syntax.bright_green })
+  hi("Number", { fg = syntax.bright_yellow })
+  hi("Boolean", { fg = syntax.bright_yellow, bold = true })
+  hi("Float", { fg = syntax.bright_yellow })
   hi("Identifier", { fg = c.fg })
-  hi("Function", { fg = c.bright_blue })
-  hi("Statement", { fg = c.bright_magenta, bold = true })
-  hi("Conditional", { fg = c.bright_magenta, bold = true })
-  hi("Repeat", { fg = c.bright_magenta, bold = true })
-  hi("Label", { fg = c.bright_magenta })
-  hi("Operator", { fg = c.bright_cyan })
-  hi("Keyword", { fg = c.bright_magenta, bold = true })
-  hi("Exception", { fg = c.bright_red, bold = true })
-  hi("PreProc", { fg = c.bright_magenta })
-  hi("Include", { fg = c.bright_magenta })
-  hi("Define", { fg = c.bright_magenta })
-  hi("Macro", { fg = c.bright_magenta })
-  hi("PreCondit", { fg = c.bright_magenta })
-  hi("Type", { fg = c.bright_cyan })
-  hi("StorageClass", { fg = c.bright_cyan, bold = true })
-  hi("Structure", { fg = c.bright_cyan })
-  hi("Typedef", { fg = c.bright_cyan })
-  hi("Special", { fg = c.bright_cyan })
-  hi("SpecialChar", { fg = c.bright_cyan })
-  hi("Tag", { fg = c.bright_blue })
+  hi("Function", { fg = syntax.bright_blue })
+  hi("Statement", { fg = syntax.bright_magenta, bold = true })
+  hi("Conditional", { fg = syntax.bright_magenta, bold = true })
+  hi("Repeat", { fg = syntax.bright_magenta, bold = true })
+  hi("Label", { fg = syntax.bright_magenta })
+  hi("Operator", { fg = syntax.bright_cyan })
+  hi("Keyword", { fg = syntax.bright_magenta, bold = true })
+  hi("Exception", { fg = syntax.bright_red, bold = true })
+  hi("PreProc", { fg = syntax.bright_magenta })
+  hi("Include", { fg = syntax.bright_magenta })
+  hi("Define", { fg = syntax.bright_magenta })
+  hi("Macro", { fg = syntax.bright_magenta })
+  hi("PreCondit", { fg = syntax.bright_magenta })
+  hi("Type", { fg = syntax.bright_cyan })
+  hi("StorageClass", { fg = syntax.bright_cyan, bold = true })
+  hi("Structure", { fg = syntax.bright_cyan })
+  hi("Typedef", { fg = syntax.bright_cyan })
+  hi("Special", { fg = syntax.bright_cyan })
+  hi("SpecialChar", { fg = syntax.bright_cyan })
+  hi("Tag", { fg = syntax.bright_blue })
   hi("Delimiter", { fg = c.white })
-  hi("Debug", { fg = c.bright_red })
-  hi("Underlined", { fg = c.bright_blue, underline = true })
+  hi("Debug", { fg = syntax.bright_red })
+  hi("Underlined", { fg = syntax.bright_blue, underline = true })
   hi("Bold", { fg = c.fg, bold = true })
   hi("Italic", { fg = c.fg, italic = true })
-  hi("Error", { fg = c.bright_red, bold = true })
-  hi("Todo", { fg = c.cursor_text, bg = c.bright_yellow, bold = true })
+  hi("Error", { fg = syntax.bright_red, bold = true })
+  hi("Todo", { fg = c.cursor_text, bg = syntax.bright_yellow, bold = true })
 
   -- Treesitter captures and semantic tokens.
   link_groups({ "@comment", "@comment.documentation" }, "Comment")

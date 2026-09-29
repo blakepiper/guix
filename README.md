@@ -246,8 +246,8 @@ accept a suggestion.
 Run `nvimide [directory] [files…]` for the IDE layout with its explorer
 and two terminal panes, or `nvim` for normal startup.
 Both editor modes use the `minimal` theme: st's black
-background and light gray text, grayscale syntax and panels, and muted diagnostic
-and Git accents. Embedded terminals use st's ANSI palette.
+background and light gray text, colored syntax, grayscale panels, and muted
+diagnostic and Git accents. Embedded terminals use st's ANSI palette.
 The copied LazyVim
 configuration uses Guix's language server and build tools, disables Mason binary
 downloads, and uses Blink's Lua fuzzy matcher. Lazy.nvim downloads plugin sources

@@ -128,12 +128,13 @@ now use neutral identifiers.
 On 2026-09-29 the imported Seafoam highlight mappings were adapted locally into
 the `minimal` colorscheme for both editor modes. Its black background, gray90
 foreground, gray cursor and 16 terminal colors come from `config.def.h` in the
-pinned Guix `st` 0.9.3 source archive. Syntax and chrome use grayscale; diagnostics
-and Git state retain muted semantic accents. Lualine uses explicit neutral
-sections so its automatic theme cannot restore colored mode blocks. No new
+pinned Guix `st` 0.9.3 source archive. Chrome uses grayscale; syntax uses blue,
+green, lavender, cyan, warm yellow and red accents from the user’s terminal
+reference. Diagnostics and Git state retain muted semantic accents. Lualine uses
+explicit neutral sections so its automatic theme cannot restore colored mode blocks. No new
 external editor sources or plugin revisions were imported.
 
-The only added Lua file is `lua/plugins/guix.lua`: Mason is disabled in favor of
+The local `lua/plugins/guix.lua` disables Mason in favor of
 Guix-managed language servers; Blink uses Lua rather than a downloaded native
 binary; Lua formatting uses the language server fallback because this channel
 does not package StyLua. `nvimide` preserves directory selection, argument
@@ -143,6 +144,12 @@ and installation are isolated in `modules/workstation/home/editor.scm`.
 The shared profile includes `tree-sitter-bash`: Guix Neovim discovers grammars
 through `TREE_SITTER_GRAMMAR_PATH`, rather than nvim-treesitter's downloaded
 `site/parser/bash.so`. Both hosts receive the Bash grammar through Guix Home.
+The local `lua/config/treesitter.lua` now restores runtime parser discovery
+before LazyVim initializes: it passes an explicit parser path to Neovim for
+locally compiled nvim-treesitter grammars, retaining profile discovery as a
+fallback. This fixes JavaScript (including `.mjs`) and other installed parsers
+being reported missing despite existing under `site/parser/`. Explicit caller
+paths remain authoritative; plugin and query revisions are unchanged.
 
 The pinned nvim-treesitter requires Tree-sitter CLI 0.26.1 or newer; the
 official channel currently provides 0.25.3. The local editor package builds
