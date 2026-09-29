@@ -29,7 +29,7 @@ Zen requests Xorg's built-in modesetting driver and loads libinput only.
 The [Xorg driver documentation](https://cgit.freedesktop.org/xorg/xserver/tree/hw/xfree86/drivers/modesetting/modesetting.man)
 describes its KMS/glamor support. No legacy Intel DDX, force-probe kernel
 arguments, custom modelines or global DPI overrides are added. Picom's existing
-XRender configuration, including its current vsync setting, is preserved.
+XRender backend is preserved, with VSync enabled to prevent screen tearing.
 
 Home discovers the eDP panel and dock display and mirrors both at 1920×1080:
 the internal panel runs at approximately 60 Hz and the external at 120 Hz.
