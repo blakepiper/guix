@@ -84,7 +84,10 @@
         ("workstation/keyboard.conf" ,(plain-file "keyboard.conf" keyboard-config))
         ("workstation/display.conf" ,(plain-file "display.conf" display-config))
         ("picom/picom.conf" ,(repository-file "home/przvl/config/picom.conf"))
-        ("wallpaper" ,(repository-file "home/przvl/config/wallpaper" #:recursive? #t))
+        ;; Manage leaves so an existing wallpaper directory (and extra images)
+        ;; survives activation.  Guix's legacy backup copies files, not trees.
+        ("wallpaper/horizon.png" ,(repository-file "home/przvl/config/wallpaper/horizon.png"))
+        ("wallpaper/night.png" ,(repository-file "home/przvl/config/wallpaper/night.png"))
         ("gammastep/config.ini" ,(repository-file "home/przvl/config/gammastep/config.ini"))
         ("mimeapps.list"
          ,(plain-file "mimeapps.list"

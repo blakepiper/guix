@@ -766,3 +766,19 @@ helper/configuration paths, and launcher entries found no former project names.
 Historical Git commits, old Guix generations and saved diagnostic logs were not
 rewritten. This is a naming migration; the Firefox policy JSON, plugin lockfile,
 channel pins and host hardware policies are unchanged.
+## Wallpaper directory activation fix, 2026-09-29
+
+Home declared `wallpaper` as one directory symlink. With a real directory at
+`~/.config/wallpaper`, Guix's legacy backup attempted a file copy and failed
+with `sendfile: Is a directory`. Home now declares the two wallpaper files
+individually, leaving the parent directory and extra local images intact.
+
+The repository Scheme checks, both hosts' Home builds, and Zen system build
+passed using the user's updated channels. A temporary Home exercised the actual
+generated symlink manager against an existing directory, regular wallpaper,
+local symlink and extra image; backups and repeated activation passed. Zen Home
+reconfiguration then completed successfully on the real account, with both
+wallpaper files backed up and replaced by store links. No system activation or
+boot test was performed. No package definitions or shell scripts changed, so
+separate package builds and ShellCheck were not applicable; Home builds realized
+the required packages. `git diff --check` passed.
