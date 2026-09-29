@@ -244,7 +244,11 @@ and history/completion suggestions; press Right at the end of the line to
 accept a suggestion.
 
 Run `nvimide [directory] [files…]` for the IDE layout with its explorer
-and two terminal panes, or `nvim` for normal startup. The copied LazyVim
+and two terminal panes, or `nvim` for normal startup.
+Both editor modes use the `minimal` theme: st's black
+background and light gray text, grayscale syntax and panels, and muted diagnostic
+and Git accents. Embedded terminals use st's ANSI palette.
+The copied LazyVim
 configuration uses Guix's language server and build tools, disables Mason binary
 downloads, and uses Blink's Lua fuzzy matcher. Lazy.nvim downloads plugin sources
 and Tree-sitter compiles missing parsers; their writable state is outside the

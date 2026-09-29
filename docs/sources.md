@@ -125,6 +125,14 @@ about un-fetched remote changes. The original import copied ten configuration
 files, including the Seafoam theme, lockfile, and IDE layout. Local adaptations
 now use neutral identifiers.
 
+On 2026-09-29 the imported Seafoam highlight mappings were adapted locally into
+the `minimal` colorscheme for both editor modes. Its black background, gray90
+foreground, gray cursor and 16 terminal colors come from `config.def.h` in the
+pinned Guix `st` 0.9.3 source archive. Syntax and chrome use grayscale; diagnostics
+and Git state retain muted semantic accents. Lualine uses explicit neutral
+sections so its automatic theme cannot restore colored mode blocks. No new
+external editor sources or plugin revisions were imported.
+
 The only added Lua file is `lua/plugins/guix.lua`: Mason is disabled in favor of
 Guix-managed language servers; Blink uses Lua rather than a downloaded native
 binary; Lua formatting uses the language server fallback because this channel
