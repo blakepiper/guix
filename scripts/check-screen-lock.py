@@ -2,7 +2,7 @@
 """Test the configured locker on private X and D-Bus servers, never the desktop.
 
 Run with Python, python-dbus, python-pygobject, GLib,
-Xvfb, xwininfo and the Home xss-lock in PATH. Requires Guix's privileged i3lock.
+Xvfb, xwininfo and the Home desktop tools in PATH. Requires Guix's privileged i3lock.
 No suspend or authentication is attempted; a private session Unlock ends locks.
 """
 import os
@@ -112,8 +112,22 @@ def main():
             assert re.fullmatch(r':\d+', display)
             env = dict(os.environ, DISPLAY=display,
                        DBUS_SYSTEM_BUS_ADDRESS=address, DBUS_SESSION_BUS_ADDRESS=address,
+                       XDG_STATE_HOME=directory,
                        XDG_SESSION_ID='test',
                        PATH=str(ROOT / 'home/przvl/bin') + ':' + os.environ['PATH'])
+            # Exercise the actual WM/compositor interaction on the private X
+            # server. Never launch either against the caller's live display.
+            desktop = []
+            for command in (
+                ['oxwm', '-c', str(ROOT / 'home/przvl/config/oxwm/config.lua')],
+                ['picom', '--config', str(ROOT / 'home/przvl/config/picom.conf')],
+            ):
+                process = subprocess.Popen(command, env=env, stdout=subprocess.DEVNULL,
+                                           stderr=subprocess.DEVNULL)
+                desktop.append(process)
+                processes.append(process)
+            pump(1)
+            assert all(p.poll() is None for p in desktop), 'Private desktop failed to start'
             line = next(line.strip() for line in (ROOT / 'home/przvl/xinitrc').read_text().splitlines()
                         if line.strip().startswith('start_helper xss-lock '))
             command = shlex.split(line)[1:]
@@ -146,11 +160,31 @@ def main():
                     manager.PrepareForSleep(False)
                     until(lambda: len(manager.inhibitors) == cycle + 2)
                     assert mapped(), 'Resume removed the lock window'
+                    subprocess.run(['setxkbmap', '-layout', 'us'], env=env, check=True,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    pump(0.1)
+                    assert mapped(), 'Keyboard mapping change removed the lock'
+                    if cycle == 0:
+                        # Leave the lock alive long enough for the observer.
+                        # Inhibitor release above must not wait for this child.
+                        report = Path(directory) / 'oxwm/lock.log'
+                        until(lambda: report.exists() and
+                              'mapped i3lock windows' in report.read_text())
+                        assert report.stat().st_mode & 0o777 == 0o600
+                        assert 'lock-diagnostics:' in report.read_text()
                     session.Unlock()
                     until(lambda: not mapped())
                     pump(0.1)  # Let xss-lock reap its child before the next request.
                 session.Lock()
                 until(mapped)
+                # An unresponsive X server must not wedge the observer. Stop
+                # only our disposable Xvfb, then restore it even on failure.
+                os.kill(xserver.pid, signal.SIGSTOP)
+                try:
+                    report = Path(directory) / 'oxwm/lock.log'
+                    until(lambda: report.exists() and 'probe status=124' in report.read_text())
+                finally:
+                    os.kill(xserver.pid, signal.SIGCONT)
                 manager.PrepareForSleep(True)
                 until(manager.released)
                 assert mapped(), 'Sleeping while already locked removed the lock'
@@ -161,7 +195,9 @@ def main():
                 assert output.count('reason=sleep') == 3, output
                 assert 'reason=session' in output, output
                 assert 'WARNING' not in output and 'abnormally' not in output, output
-                print('PASS: delayed readiness, three sleep/resume cycles, manual lock, already-locked sleep')
+                print('PASS: OXWM/Picom, delayed readiness, three sleep/resume cycles, '
+                      'keyboard mapping changes, private diagnostics, stalled X probe timeout, '
+                      'manual lock, already-locked sleep')
         finally:
             # Release the name while the private bus is still alive.
             if name is not None:

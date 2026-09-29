@@ -657,3 +657,40 @@ shell scripts, Zen system build, and both hosts' Home builds passed. The Home
 builds used the wrapper's live Firefox/Codex resolution. No package recipe was
 changed. Physical lid-close/resume and password authentication remain to be
 tested; these checks are not a boot or physical resume test.
+
+## Automatic lock diagnostics, 2026-09-29
+
+Zen's saved logs confirmed another five-second locker inhibitor timeout before
+connecting the dock, completed s2idle resume, and an orderly power-key shutdown.
+They do not identify the frozen desktop's cause. No kernel, sleep mode,
+compositor policy or authentication changes were made on that evidence.
+
+Added two bounded, private metadata snapshots per lock, with current/previous
+report retention. The observer explicitly closes its inherited inhibitor before
+starting subprocesses; the main helper still execs privileged i3lock. The reports
+contain process states, X query results and visible locker IDs, not command-line
+arguments, application titles, screenshots or key input.
+
+Validation:
+
+- Repository Scheme checks passed.
+- Both hosts' Home builds and the Zen system build passed. Home builds resolved
+  cached Firefox 156.0 and official stable Codex 0.159.0 via `scripts/guix`.
+- The private Xvfb/D-Bus integration test passed using installed privileged
+  i3lock, xss-lock, OXWM and Picom: delayed readiness, repeated simulated sleep
+  notifications, keyboard mapping changes, manual locking, already-locked sleep,
+  mode-0600 diagnostic output, and bounded probes with Xvfb deliberately stopped.
+- ShellCheck and `git diff --check` passed.
+
+These checks do not reproduce a physical lid/dock freeze or validate a fix for
+it. No system activation, reboot, live-screen lock or actual suspend was used.
+
+Zen Home activation encountered a pre-existing real `~/.config/wallpaper`
+directory where Home expects a store symlink (`sendfile: Is a directory`).
+Restored all removed links from the original active Home and verified every
+other managed link still matches it; the wallpaper directory was left intact.
+Installed only the two tested locker helpers from the new store build into
+`~/.local/bin`. That build is retained by the GC root
+`~/.local/state/zen-diagnostics/lock-diagnostics-home`. The running xss-lock will
+resolve the updated helper at its next lock. Full Home activation did not
+complete, and its unrelated wallpaper conflict remains to be reconciled.

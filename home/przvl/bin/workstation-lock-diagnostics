@@ -1,0 +1,29 @@
+#!/bin/sh
+# Launched only after the caller closes its inherited sleep inhibitor.
+# Collect metadata, never window titles, keystrokes, screenshots or passwords.
+set -u
+locker=$1
+snapshot() {
+    printf '\nlock-diagnostics: %s locker=%s\n' "$(date -Is)" "$locker"
+    ps -eo pid,ppid,stat,etimes,wchan:32,comm
+    for probe in xset xrandr xinput; do
+        printf '\n--- %s ---\n' "$probe"
+        case "$probe" in
+            xset) timeout --kill-after=1 2 xset q ;;
+            xrandr) timeout --kill-after=1 2 xrandr --current ;;
+            xinput) timeout --kill-after=1 2 xinput list --short ;;
+        esac
+        printf 'probe status=%s\n' "$?"
+    done
+    # Search only for the locker; do not enumerate application window titles.
+    printf '\n--- mapped i3lock windows ---\n'
+    timeout --kill-after=1 2 xdotool search --onlyvisible --class '^i3lock$'
+    printf 'probe status=%s\n' "$?"
+}
+# The first sample can catch startup stalls before elogind's five-second
+# timeout. The second survives sleep and captures the resumed desktop.
+for delay in 2 15; do
+    sleep "$delay"
+    kill -0 "$locker" 2>/dev/null || exit 0
+    snapshot
+done

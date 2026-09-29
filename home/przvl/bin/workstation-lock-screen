@@ -9,4 +9,22 @@ else
     reason=session
 fi
 printf 'screen-lock: %s launching i3lock (reason=%s)\n' "$(date -Is)" "$reason" >&2
+# Keep two bounded metadata reports, independently of the rotating X log.
+# Close the inhibitor in the observer BEFORE it forks or sleeps: diagnostics
+# must never delay suspend. The parent still execs the privileged locker.
+diagnostics=${XDG_STATE_HOME:-$HOME/.local/state}/oxwm
+if (umask 077; mkdir -p "$diagnostics") &&
+   command -v workstation-lock-diagnostics >/dev/null 2>&1; then
+    mv -f "$diagnostics/lock.log" "$diagnostics/lock.previous.log" 2>/dev/null || :
+    (
+        case ${XSS_SLEEP_LOCK_FD:-} in
+            '') ;;
+            *[!0-9]*) exit 1 ;;
+            *) eval "exec ${XSS_SLEEP_LOCK_FD}>&-" ;;
+        esac
+        unset XSS_SLEEP_LOCK_FD
+        umask 077
+        exec workstation-lock-diagnostics "$$" > "$diagnostics/lock.log" 2>&1
+    ) &
+fi
 exec /run/privileged/bin/i3lock -n -c 1a1b26

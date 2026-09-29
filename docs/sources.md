@@ -57,6 +57,10 @@ Read-only local references inspected on 2026-09-26:
   there is no systemd user-manager command or dependency in these scripts.
   Region screenshots use Scrot's `--freeze --select` to avoid classic selection
   outline trails with Picom VSync; the desktop pauses visually during selection.
+  The locally authored `workstation-lock-diagnostics` observer records bounded
+  process/X metadata around lock startup and resume. Its subprocess closes the
+  inherited sleep inhibitor before doing any work; privileged i3lock remains
+  responsible for authentication and releasing the main inhibitor.
 - Blix `cb7c59f55dd072fae7936ca05b5a3cab088313d4`:
   <https://github.com/blakepiper/blix>. OXWM Lua configuration, microphone keysym
   patch, mirrored-monitor patch, host organization and historical hardware facts.

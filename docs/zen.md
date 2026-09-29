@@ -242,3 +242,24 @@ cp ~/.local/share/xorg/Xorg.0.log ~/zen-frozen-xorg.log
 ```
 
 These preserve the locker/compositor state and sleep timeline for diagnosis.
+
+### Recurrence on 2026-09-29
+
+The saved logs show a lid close at 09:54:42, another xss-lock inhibitor timeout
+at 09:54:47, and s2idle resume at 09:55:19 as the Thunderbolt dock appeared.
+Wi-Fi reconnected; lid opening and dock removal were processed. The power key
+initiated an orderly shutdown at 09:56:13. No GPU hang, panic or OOM kill was
+recorded in this interval. USB-C/UCSI errors also occurred, but the logs do not
+establish the cause of the unresponsive desktop. The timeout preceded docking;
+the earlier locker handoff change did not eliminate it.
+
+The lock helper now starts an independent metadata observer. It closes its copy
+of the sleep inhibitor before launching any subprocess, while the main helper
+still execs privileged i3lock. After two seconds, and again after a further
+15 seconds (which can span suspend), it records process states, bounded X
+queries and visible i3lock window IDs if the locker is still running. Reports
+are private files in `~/.local/state/oxwm/lock.log` and `lock.previous.log`.
+There are no screenshots, window-title dumps, keystrokes or password logging.
+This is automatic evidence collection, not a demonstrated freeze fix or a
+watchdog that kills the lock. Home reconfiguration installs it; the running
+xss-lock resolves the helper on its next launch, so no X restart is needed.
